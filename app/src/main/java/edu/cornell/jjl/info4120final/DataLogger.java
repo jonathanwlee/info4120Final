@@ -59,7 +59,7 @@ public class DataLogger {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             if (!fileExists) {
-                bw.write("Timestamp, latitude, longitude");
+                bw.write("Timestamp, x, y, z");
                 bw.newLine();
             }
             String time = logSDF.format((new Date(System.currentTimeMillis())));
@@ -98,7 +98,7 @@ public class DataLogger {
     private String genFileName(String mode) {
         long time = System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC-5"));
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC-4"));
         return "log_" + sdf.format(new Date(time)) + "_" + mode + ".csv";
     }
 

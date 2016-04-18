@@ -67,14 +67,14 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 0;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
      * than this value.
      */
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+            UPDATE_INTERVAL_IN_MILLISECONDS ;
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements
 
     /**
      *
-     *
+     *\
      */
     protected SensorManager mSensorManager;
     protected Sensor mSensor;
@@ -250,6 +250,10 @@ public class MainActivity extends AppCompatActivity implements
             mRequestingLocationUpdates = true;
             setButtonsEnabledState();
             startLocationUpdates();
+
+            mLocationLogger = new DataLogger("location");
+            mAccelLogger = new DataLogger("accelerometer");
+            mLinearAccelLogger = new DataLogger("linear_accelerometer");
         }
     }
 
@@ -442,24 +446,24 @@ public class MainActivity extends AppCompatActivity implements
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    public void onSensorChanged(SensorEvent event){
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float sensorX = event.values[0];
-            float sensorY = event.values[1];
-            float sensorZ = event.values[2];
-            updateAccelerometer(sensorX, sensorY, sensorZ);
+                public void onSensorChanged(SensorEvent event){
+                    if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                        float sensorX = event.values[0];
+                        float sensorY = event.values[1];
+                        float sensorZ = event.values[2];
+                        updateAccelerometer(sensorX, sensorY, sensorZ);
 
-            if(mStartUpdatesButton.isEnabled()) {
-                mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
-            }
-        }
+                        if(mStartUpdatesButton.isEnabled()) {
+                            mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
+                        }
+                    }
 
-        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            float sensorX = event.values[0];
-            float sensorY = event.values[1];
-            float sensorZ = event.values[2];
-            if(mStartUpdatesButton.isEnabled()) {
-                mLinearAccelLogger.logAccel(Float.toString(sensorX),Float.toString(sensorY),Float.toString(sensorZ));
+                    if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+                        float sensorX = event.values[0];
+                        float sensorY = event.values[1];
+                        float sensorZ = event.values[2];
+                        if(mStartUpdatesButton.isEnabled()) {
+                            mLinearAccelLogger.logAccel(Float.toString(sensorX),Float.toString(sensorY),Float.toString(sensorZ));
             }
         }
     }
