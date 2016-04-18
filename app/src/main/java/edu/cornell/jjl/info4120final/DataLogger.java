@@ -98,7 +98,7 @@ public class DataLogger {
     private String genFileName(String mode) {
         long time = System.currentTimeMillis();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC-4"));
+        sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         return "log_" + sdf.format(new Date(time)) + "_" + mode + ".csv";
     }
 
