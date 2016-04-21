@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import android.os.Environment;
+import android.util.Log;
 
 import com.google.android.gms.location.DetectedActivity;
 
@@ -93,39 +94,56 @@ public class DataLogger {
         for (DetectedActivity da: detectedActivities) {
             switch(da.getType()) {
                 case DetectedActivity.IN_VEHICLE:
+                    Log.i("RECOG","Vehicle: " + da.getConfidence());
                     vehicle = da.getConfidence();
+                    break;
                 case DetectedActivity.ON_BICYCLE:
+                    Log.i("RECOG","Bicycle: " + da.getConfidence());
                     bicycle = da.getConfidence();
+                    break;
                 case DetectedActivity.ON_FOOT:
+                    Log.i("RECOG","Foot: " + da.getConfidence());
                     foot = da.getConfidence();
+                    break;
                 case DetectedActivity.RUNNING:
+                    Log.i("RECOG","Running: " + da.getConfidence());
                     running = da.getConfidence();
+                    break;
                 case DetectedActivity.STILL:
+                    Log.i("RECOG","Still: " + da.getConfidence());
                     still = da.getConfidence();
+                    break;
                 case DetectedActivity.TILTING:
+                    Log.i("RECOG","Tilting: " + da.getConfidence());
                     tilting = da.getConfidence();
+                    break;
                 case DetectedActivity.UNKNOWN:
+                    Log.i("RECOG","Unknown: " + da.getConfidence());
                     unknown = da.getConfidence();
+                    break;
                 case DetectedActivity.WALKING:
+                    Log.i("RECOG","Walking: " + da.getConfidence());
                     walking = da.getConfidence();
+                    break;
                 default:
+                    break;
             }
         }
 
-            File file = new File(logFilePath, logFileName);
-                            Boolean fileExists = file.exists();
-            try {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
-                if (!fileExists) {
-                    bw.write("Timestamp, Still, Foot, Walking,Running,Bicycle,Vehicle,Tilting,Unknown");
-                    bw.newLine();
-                }
-                String time = logSDF.format((new Date(System.currentTimeMillis())));
+        File file = new File(logFilePath, logFileName);
+        Boolean fileExists = file.exists();
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+            if (!fileExists) {
+                bw.write("Timestamp, Still, Foot, Walking,Running,Bicycle,Vehicle,Tilting,Unknown");
+                bw.newLine();
+            }
+            String time = logSDF.format((new Date(System.currentTimeMillis())));
 
-                bw.write(
-                        time + "," + Integer.toString(still) + "," + Integer.toString(foot) + "," + Integer.toString(walking)
+            bw.write(
+                    time + "," + Integer.toString(still) + "," + Integer.toString(foot) + "," + Integer.toString(walking)
                             + "," + Integer.toString(running) + "," + Integer.toString(bicycle) + ","
-                    + Integer.toString(vehicle) + "," + Integer.toString(tilting) + "," + Integer.toString(unknown)
+                            + Integer.toString(vehicle) + "," + Integer.toString(tilting) + "," + Integer.toString(unknown)
             );
             bw.newLine();
             bw.close();

@@ -86,8 +86,6 @@ public class MainActivity extends AppCompatActivity implements
     private PendingIntent mGeofencePendingIntent;
     private boolean mGeofencesAdded;
 
-
-
     protected static final String TAG = "main";
     protected static final String TAG_LOCATION = "location";
     protected static final String TAG_ACCEL = "accelerometer";
@@ -124,24 +122,11 @@ public class MainActivity extends AppCompatActivity implements
      */
     protected Location mCurrentLocation;
 
-    // UI Widgets.
-    protected Button mStartUpdatesButton;
-    protected Button mStopUpdatesButton;
-    protected TextView mLastUpdateTimeTextView;
-    protected TextView mLatitudeTextView;
-    protected TextView mLongitudeTextView;
-    protected TextView mAccelerometerTextView;
-
-    // Labels.
-    protected String mLatitudeLabel;
-    protected String mLongitudeLabel;
-    protected String mLastUpdateTimeLabel;
-
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
      */
-    protected Boolean mRequestingLocationUpdates;
+    protected Boolean mRequestingUpdates;
 
     /**
      * Time when the location was updated represented as a String.
@@ -150,12 +135,15 @@ public class MainActivity extends AppCompatActivity implements
 
 
     // UI elements.
-    private Button mRequestActivityUpdatesButton;
-    private Button mRemoveActivityUpdatesButton;
+
     private ListView mDetectedActivitiesListView;
     protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
 
     private DetectedActivitiesAdapter mAdapter;
+
+    private Button startButton;
+    private Button stopButton;
+
     /**
      * The DetectedActivities that we track in this sample. We use this for initializing the
      * {@code DetectedActivitiesAdapter}. We also use this for persisting state in
@@ -173,12 +161,10 @@ public class MainActivity extends AppCompatActivity implements
     protected DataLogger mLocationLogger;
     protected DataLogger mAccelLogger;
     protected DataLogger mLinearAccelLogger;
+    protected DataLogger mActivityLogger;
 
     private SharedPreferences mSharedPreferences;
 
-    // Buttons for kicking off the process of adding or removing geofences.
-    private Button mAddGeofencesButton;
-    private Button mRemoveGeofencesButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -190,9 +176,10 @@ public class MainActivity extends AppCompatActivity implements
         lbc.registerReceiver(receiver, new IntentFilter(""));
 
         // Get the UI widgets.
-        mRequestActivityUpdatesButton = (Button) findViewById(R.id.request_activity_updates_button);
-        mRemoveActivityUpdatesButton = (Button) findViewById(R.id.remove_activity_updates_button);
         mDetectedActivitiesListView = (ListView) findViewById(R.id.detected_activities_listview);
+        startButton = (Button) findViewById(R.id.start_update);
+        stopButton = (Button) findViewById(R.id.stop_update);
+
 
         // Get a receiver for broadcasts from ActivityDetectionIntentService.
         mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
@@ -201,33 +188,13 @@ public class MainActivity extends AppCompatActivity implements
         mGeofenceList = new ArrayList<Geofence>();
         mGeofencePendingIntent = null;
 
-        // Locate the UI widgets.
-        mStartUpdatesButton = (Button) findViewById(R.id.start_updates_button);
-        mStopUpdatesButton = (Button) findViewById(R.id.stop_updates_button);
-        mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
-        mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
-        mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
-        mAccelerometerTextView = (TextView) findViewById(R.id.accelerometer_text);
-
-
-        mAddGeofencesButton = (Button) findViewById(R.id.add_geofences_button);
-        mRemoveGeofencesButton = (Button) findViewById(R.id.remove_geofences_button);
-
-
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        // Set labels.
-        mLatitudeLabel = getResources().getString(R.string.latitude_label);
-        mLongitudeLabel = getResources().getString(R.string.longitude_label);
-        mLastUpdateTimeLabel = getResources().getString(R.string.last_update_time_label);
-
-        mRequestingLocationUpdates = false;
+        mRequestingUpdates = false;
         mLastUpdateTime = "";
 
-        mLocationLogger = new DataLogger("location");
-        mAccelLogger = new DataLogger("accelerometer");
-        mLinearAccelLogger = new DataLogger("linear_accelerometer");
+
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -245,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements
         // populate it with DetectedActivity objects whose confidence is set to 0. Doing this
         // ensures that the bar graphs for only only the most recently detected activities are
         // filled in.
+
         if (savedInstanceState != null && savedInstanceState.containsKey(
                 Constants.DETECTED_ACTIVITIES)) {
             mDetectedActivities = (ArrayList<DetectedActivity>) savedInstanceState.getSerializable(
@@ -267,58 +235,12 @@ public class MainActivity extends AppCompatActivity implements
         populateGeofenceList();
 
         buildGoogleApiClient();
-
-
     }
 
     public void onResult(Status status) {
-/*
         if (status.isSuccess()) {
-            // Update state and save in shared preferences.
-            mGeofencesAdded = !mGeofencesAdded;
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putBoolean(Constants.GEOFENCES_ADDED_KEY, mGeofencesAdded);
-            editor.apply();
-
-            // Update the UI. Adding geofences enables the Remove Geofences button, and removing
-            // geofences enables the Add Geofences button.
             setButtonsEnabledState();
-
-            Toast.makeText(
-                    this,
-                    getString(mGeofencesAdded ? R.string.geofences_added :
-                            R.string.geofences_removed),
-                    Toast.LENGTH_SHORT
-            ).show();
-
-
-        } else {
-            // Get the status code for the error and log it using a user-friendly message.
-            String errorMessage = GeofenceErrorMessages.getErrorString(this,
-                    status.getStatusCode());
-            Log.e(TAG, errorMessage);
         }
-*/
-
-        if (status.isSuccess()) {
-            // Toggle the status of activity updates requested, and save in shared preferences.
-            boolean requestingUpdates = !getUpdatesRequestedState();
-            setUpdatesRequestedState(requestingUpdates);
-
-            // Update the UI. Requesting activity updates enables the Remove Activity Updates
-            // button, and removing activity updates enables the Add Activity Updates button.
-            setButtonsEnabledState();
-
-            Toast.makeText(
-                    this,
-                    getString(requestingUpdates ? R.string.activity_updates_added :
-                            R.string.activity_updates_removed),
-                    Toast.LENGTH_SHORT
-            ).show();
-        } else {
-            Log.e(TAG, "Error adding or removing activity detection: " + status.getStatusMessage());
-        }
-
     }
 
     /**
@@ -326,32 +248,31 @@ public class MainActivity extends AppCompatActivity implements
      *
      * @param savedInstanceState The activity state saved in the Bundle.
      */
-        private void updateValuesFromBundle(Bundle savedInstanceState) {
-            Log.i(TAG, "Updating values from bundle");
-            if (savedInstanceState != null) {
-                // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
-                // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-                if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-                    mRequestingLocationUpdates = savedInstanceState.getBoolean(
-                            REQUESTING_LOCATION_UPDATES_KEY);
-                    setButtonsEnabledState();
-                }
+    private void updateValuesFromBundle(Bundle savedInstanceState) {
+        Log.i(TAG, "Updating values from bundle");
+        if (savedInstanceState != null) {
+            // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
+            // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
+            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+                mRequestingUpdates = savedInstanceState.getBoolean(
+                        REQUESTING_LOCATION_UPDATES_KEY);
+                setButtonsEnabledState();
+            }
 
-                // Update the value of mCurrentLocation from the Bundle and update the UI to show the
-                // correct latitude and longitude.
-                if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
-                    // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
-                    // is not null.
-                    mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
-                }
+            // Update the value of mCurrentLocation from the Bundle and update the UI to show the
+            // correct latitude and longitude.
+            if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
+                // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation
+                // is not null.
+                mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
+            }
 
-                // Update the value of mLastUpdateTime from the Bundle and update the UI.
-                if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
-                    mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
-                }
-                //updateUI();
+            // Update the value of mLastUpdateTime from the Bundle and update the UI.
+            if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
+                mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
             }
         }
+    }
 
     private void logSecurityException(SecurityException securityException) {
         Log.e(TAG, "Invalid location permission. " +
@@ -403,34 +324,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Handles the Start Updates button and requests start of location updates. Does nothing if
-     * updates have already been requested.
-                    */
-    public void startUpdatesButtonHandler(View view) {
-        if (!mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = true;
-            setButtonsEnabledState();
-            startLocationUpdates();
-
-            mLocationLogger = new DataLogger("location");
-            mAccelLogger = new DataLogger("accelerometer");
-            mLinearAccelLogger = new DataLogger("linear_accelerometer");
-        }
-    }
-
-    /**
-     * Handles the Stop Updates button, and requests removal of location updates. Does nothing if
-     * updates were not previously requested.
-     */
-    public void stopUpdatesButtonHandler(View view) {
-        if (mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = false;
-            setButtonsEnabledState();
-            stopLocationUpdates();
-        }
-    }
-
-    /**
      * Requests location updates from the FusedLocationApi.
      */
     protected void startLocationUpdates() {
@@ -450,34 +343,36 @@ public class MainActivity extends AppCompatActivity implements
                 mGoogleApiClient, mLocationRequest, this);
     }
 
+    public void setStartUpdating(View view) {
+        mRequestingUpdates = true;
+        startLocationUpdates();
+        setButtonsEnabledState();
+        mAccelLogger = new DataLogger("accel");
+        mLocationLogger = new DataLogger("location");
+        mActivityLogger = new DataLogger("activity_recognition");
+    }
+
+    public void setStopUpdating(View view) {
+        mRequestingUpdates = false;
+        stopLocationUpdates();
+        setButtonsEnabledState();
+    }
+
     /**
      * Ensures that only one button is enabled at any time. The Start Updates button is enabled
      * if the user is not requesting location updates. The Stop Updates button is enabled if the
      * user is requesting location updates.
      */
     private void setButtonsEnabledState() {
-/*        if (mRequestingLocationUpdates) {
-            mStartUpdatesButton.setEnabled(false);
-            mStopUpdatesButton.setEnabled(true);
-        } else {
-            mStartUpdatesButton.setEnabled(true);
-            mStopUpdatesButton.setEnabled(false);
+        if (mRequestingUpdates) {
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+
         }
+        else {
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
 
-        if (mGeofencesAdded) {
-            mAddGeofencesButton.setEnabled(false);
-            mRemoveGeofencesButton.setEnabled(true);
-        } else {
-            mAddGeofencesButton.setEnabled(true);
-            mRemoveGeofencesButton.setEnabled(false);
-        }*/
-
-        if (getUpdatesRequestedState()) {
-            mRequestActivityUpdatesButton.setEnabled(false);
-            mRemoveActivityUpdatesButton.setEnabled(true);
-        } else {
-            mRequestActivityUpdatesButton.setEnabled(true);
-            mRemoveActivityUpdatesButton.setEnabled(false);
         }
     }
 
@@ -489,42 +384,6 @@ public class MainActivity extends AppCompatActivity implements
      */
     private SharedPreferences getSharedPreferencesInstance() {
         return getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-    }
-
-
-    /**
-     * Retrieves the boolean from SharedPreferences that tracks whether we are requesting activity
-     * updates.
-     */
-    private boolean getUpdatesRequestedState() {
-        return getSharedPreferencesInstance()
-                .getBoolean(Constants.ACTIVITY_UPDATES_REQUESTED_KEY, false);
-    }
-
-    /**
-     * Sets the boolean in SharedPreferences that tracks whether we are requesting activity
-     * updates.
-     */
-    private void setUpdatesRequestedState(boolean requestingUpdates) {
-        getSharedPreferencesInstance()
-                .edit()
-                .putBoolean(Constants.ACTIVITY_UPDATES_REQUESTED_KEY, requestingUpdates)
-                .commit();
-    }
-
-
-    /**
-     * Updates the latitude, the longitude, and the last location time in the UI.
-     */
-    private void updateUI() {
-        mLatitudeTextView.setText(String.format("%s: %f", mLatitudeLabel,
-                mCurrentLocation.getLatitude()));
-        mLongitudeTextView.setText(String.format("%s: %f", mLongitudeLabel,
-
-
-                mCurrentLocation.getLongitude()));
-        mLastUpdateTimeTextView.setText(String.format("%s: %s", mLastUpdateTimeLabel,
-                mLastUpdateTime));
     }
 
     /**
@@ -553,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
 
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+        if (mGoogleApiClient.isConnected() && mRequestingUpdates) {
             startLocationUpdates();
         }
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -575,8 +434,27 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
+        stopLocationUpdates();
+        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
+                mGoogleApiClient,
+                getActivityDetectionPendingIntent()
+        ).setResultCallback(this);
 
+        try {
+            // Remove geofences.
+            LocationServices.GeofencingApi.removeGeofences(
+                    mGoogleApiClient,
+                    // This is the same pending intent that was used in addGeofences().
+                    getGeofencePendingIntent()
+            ).setResultCallback(this); // Result processed in onResult().
+        } catch (SecurityException securityException) {
+            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+            logSecurityException(securityException);
+        }
+
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
 
     /**
@@ -586,19 +464,39 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
 
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
+                mGoogleApiClient,
+                Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
+                getActivityDetectionPendingIntent()
+        ).setResultCallback(this);
 
-        // If the initial location was never previously requested, we use
-        // FusedLocationApi.getLastLocation() to get it. If it was previously requested, we store
-        // its value in the Bundle and check for it in onCreate(). We
-        // do not request it again unless the user specifically requests location updates by pressing
-        // the Start Updates button.
-        //
-        // Because we cache the value of the initial location in the Bundle, it means that if the
-        // user launches the activity,
-        // moves to a new location, and then changes the device orientation, the original location
-        // is displayed as the activity is re-created.
-        if (mCurrentLocation == null) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            try {
+                LocationServices.GeofencingApi.addGeofences(
+                        mGoogleApiClient,
+                        // The GeofenceRequest object.
+                        getGeofencingRequest(),
+                        // A pending intent that that is reused when calling removeGeofences(). This
+                        // pending intent is used to generate an intent when a matched geofence
+                        // transition is observed.
+                        getGeofencePendingIntent()
+                ).setResultCallback(this); // Result processed in onResult().
+            } catch (SecurityException securityException) {
+                // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+                logSecurityException(securityException);
+            }
+
+            // If the initial location was never previously requested, we use
+            // FusedLocationApi.getLastLocation() to get it. If it was previously requested, we store
+            // its value in the Bundle and check for it in onCreate(). We
+            // do not request it again unless the user specifically requests location updates by pressing
+            // the Start Updates button.
+            //
+            // Because we cache the value of the initial location in the Bundle, it means that if the
+            // user launches the activity,
+            // moves to a new location, and then changes the device orientation, the original location
+            // is displayed as the activity is re-created.
+            if (mCurrentLocation == null) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
@@ -610,13 +508,13 @@ public class MainActivity extends AppCompatActivity implements
             }
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            //updateUI();
+
         }
 
         // If the user presses the Start Updates button before GoogleApiClient connects, we set
         // mRequestingLocationUpdates to true (see startUpdatesButtonHandler()). Here, we check
         // the value of mRequestingLocationUpdates and if it is true, we start location updates.
-        if (mRequestingLocationUpdates) {
+        if (mRequestingUpdates) {
             startLocationUpdates();
         }
     }
@@ -628,12 +526,12 @@ public class MainActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        //updateUI();
 
-        //Toast.makeText(this, getResources().getString(R.string.location_updated_message), Toast.LENGTH_SHORT).show();
-        Log.i(TAG_LOCATION,"Latitude: " + Double.toString(mCurrentLocation.getLatitude()));
-        Log.i(TAG_LOCATION,"Longitude: " + Double.toString(mCurrentLocation.getLongitude()));
-        mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
+        if (mRequestingUpdates) {
+            Log.i(TAG_LOCATION, "Latitude: " + Double.toString(mCurrentLocation.getLatitude()));
+            Log.i(TAG_LOCATION, "Longitude: " + Double.toString(mCurrentLocation.getLongitude()));
+            mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
+        }
     }
 
     @Override
@@ -655,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements
      * Stores activity data in the Bundle.
      */
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingUpdates);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
@@ -666,31 +564,16 @@ public class MainActivity extends AppCompatActivity implements
             float sensorX = event.values[0];
             float sensorY = event.values[1];
             float sensorZ = event.values[2];
-            Log.i(TAG_ACCEL,"X: " + Float.toString(sensorX) + " Y: " + Float.toString(sensorY) + " Z: " + Float.toString(sensorZ));
-            //updateAccelerometer(sensorX, sensorY, sensorZ);
-
-            if(mStartUpdatesButton.isEnabled()) {
-                mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
+            //Log.i(TAG_ACCEL,"X: " + Float.toString(sensorX) + " Y: " + Float.toString(sensorY) + " Z: " + Float.toString(sensorZ));
+            if (mRequestingUpdates) {
+               mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
             }
-        }
-
-        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            float sensorX = event.values[0];
-            float sensorY = event.values[1];
-            float sensorZ = event.values[2];
-            if(mStartUpdatesButton.isEnabled()) {
-                mLinearAccelLogger.logAccel(Float.toString(sensorX),Float.toString(sensorY),Float.toString(sensorZ));
-    }
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-    }
-
-    public void updateAccelerometer(float x,float y, float z) {
-        mAccelerometerTextView.setText("{" + Float.toString(x) + "," + Float.toString(y) + "," + Float.toString(z) + "}");
     }
 
     /**
@@ -764,53 +647,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Adds geofences, which sets alerts to be notified when the device enters or exits one of the
-     * specified geofences. Handles the success or failure results returned by addGeofences().
-     */
-    public void addGeofencesButtonHandler(View view) {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
-                    // The GeofenceRequest object.
-                    getGeofencingRequest(),
-                    // A pending intent that that is reused when calling removeGeofences(). This
-                    // pending intent is used to generate an intent when a matched geofence
-                    // transition is observed.
-                    getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().
-        } catch (SecurityException securityException) {
-            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
-            logSecurityException(securityException);
-        }
-    }
-
-    /**
-     * Removes geofences, which stops further notifications when the device enters or exits
-     * previously registered geofences.
-     */
-    public void removeGeofencesButtonHandler(View view) {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        try {
-            // Remove geofences.
-            LocationServices.GeofencingApi.removeGeofences(
-                    mGoogleApiClient,
-                    // This is the same pending intent that was used in addGeofences().
-                    getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().
-        } catch (SecurityException securityException) {
-            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
-            logSecurityException(securityException);
-        }
-    }
-    /**
      * Gets a PendingIntent to be sent for each activity detection.
      */
     private PendingIntent getActivityDetectionPendingIntent() {
@@ -819,50 +655,6 @@ public class MainActivity extends AppCompatActivity implements
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // requestActivityUpdates() and removeActivityUpdates().
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    /**
-     * Registers for activity recognition updates using
-     * {@link com.google.android.gms.location.ActivityRecognitionApi#requestActivityUpdates} which
-     * returns a {@link com.google.android.gms.common.api.PendingResult}. Since this activity
-     * implements the PendingResult interface, the activity itself receives the callback, and the
-     * code within {@code onResult} executes. Note: once {@code requestActivityUpdates()} completes
-     * successfully, the {@code DetectedActivitiesIntentService} starts receiving callbacks when
-     * activities are detected.
-     */
-    public void requestActivityUpdatesButtonHandler(View view) {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected),
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
-                mGoogleApiClient,
-                Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
-                getActivityDetectionPendingIntent()
-        ).setResultCallback(this);
-    }
-
-    /**
-     * Removes activity recognition updates using
-     * {@link com.google.android.gms.location.ActivityRecognitionApi#removeActivityUpdates} which
-     * returns a {@link com.google.android.gms.common.api.PendingResult}. Since this activity
-     * implements the PendingResult interface, the activity itself receives the callback, and the
-     * code within {@code onResult} executes. Note: once {@code removeActivityUpdates()} completes
-     * successfully, the {@code DetectedActivitiesIntentService} stops receiving callbacks about
-     * detected activities.
-     */
-    public void removeActivityUpdatesButtonHandler(View view) {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // Remove all activity updates for the PendingIntent that was used to request activity
-        // updates.
-        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
-                mGoogleApiClient,
-                getActivityDetectionPendingIntent()
-        ).setResultCallback(this);
     }
 
 
@@ -887,6 +679,11 @@ public class MainActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             ArrayList<DetectedActivity> updatedActivities =
                     intent.getParcelableArrayListExtra(Constants.ACTIVITY_EXTRA);
+
+            if (mRequestingUpdates) {
+                mActivityLogger.logActivity(updatedActivities);
+            }
+
             updateDetectedActivitiesList(updatedActivities);
         }
     }

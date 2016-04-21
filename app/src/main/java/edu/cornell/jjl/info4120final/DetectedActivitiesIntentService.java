@@ -65,7 +65,6 @@ public class DetectedActivitiesIntentService extends IntentService {
         // device. Each activity is associated with a confidence level, which is an int between
         // 0 and 100.
         ArrayList<DetectedActivity> detectedActivities = (ArrayList) result.getProbableActivities();
-        mActivityLogger.logActivity(detectedActivities);
         // Log each activity.
         Log.i(TAG, "activities detected");
         Log.i(TAG,Integer.toString(detectedActivities.size()));
@@ -74,9 +73,6 @@ public class DetectedActivitiesIntentService extends IntentService {
                     getApplicationContext(),
                     da.getType()) + " " + da.getConfidence() + "%"
             );
-
-
-
         }
 
         // Broadcast the list of detected activities.
