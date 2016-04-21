@@ -37,6 +37,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,8 @@ import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
@@ -143,6 +146,21 @@ public class MainActivity extends AppCompatActivity implements
      */
     protected String mLastUpdateTime;
 
+
+    // UI elements.
+    private Button mRequestActivityUpdatesButton;
+    private Button mRemoveActivityUpdatesButton;
+    private ListView mDetectedActivitiesListView;
+    protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
+
+    private DetectedActivitiesAdapter mAdapter;
+    /**
+     * The DetectedActivities that we track in this sample. We use this for initializing the
+     * {@code DetectedActivitiesAdapter}. We also use this for persisting state in
+     * {@code onSaveInstanceState()} and restoring it in {@code onCreate()}. This ensures that each
+     * activity is displayed with the correct confidence level upon orientation changes.
+     */
+    private ArrayList<DetectedActivity> mDetectedActivities;
     /**
      *
      *\
@@ -169,6 +187,15 @@ public class MainActivity extends AppCompatActivity implements
         GoogleReceiver receiver = new GoogleReceiver(this);
         lbc.registerReceiver(receiver, new IntentFilter(""));
 
+
+
+        // Get the UI widgets.
+        mRequestActivityUpdatesButton = (Button) findViewById(R.id.request_activity_updates_button);
+        mRemoveActivityUpdatesButton = (Button) findViewById(R.id.remove_activity_updates_button);
+        mDetectedActivitiesListView = (ListView) findViewById(R.id.detected_activities_listview);
+
+        // Get a receiver for broadcasts from ActivityDetectionIntentService.
+        mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
 
         //Geofences Init
         mGeofenceList = new ArrayList<Geofence>();
@@ -211,6 +238,29 @@ public class MainActivity extends AppCompatActivity implements
         mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
         setButtonsEnabledState();
 
+
+        // Reuse the value of mDetectedActivities from the bundle if possible. This maintains state
+        // across device orientation changes. If mDetectedActivities is not stored in the bundle,
+        // populate it with DetectedActivity objects whose confidence is set to 0. Doing this
+        // ensures that the bar graphs for only only the most recently detected activities are
+        // filled in.
+        if (savedInstanceState != null && savedInstanceState.containsKey(
+                Constants.DETECTED_ACTIVITIES)) {
+            mDetectedActivities = (ArrayList<DetectedActivity>) savedInstanceState.getSerializable(
+                    Constants.DETECTED_ACTIVITIES);
+        } else {
+            mDetectedActivities = new ArrayList<DetectedActivity>();
+
+            // Set the confidence level of each monitored activity to zero.
+            for (int i = 0; i < Constants.MONITORED_ACTIVITIES.length; i++) {
+                mDetectedActivities.add(new DetectedActivity(Constants.MONITORED_ACTIVITIES[i], 0));
+            }
+        }
+
+        // Bind the adapter to the ListView responsible for display data for detected activities.
+        mAdapter = new DetectedActivitiesAdapter(this, mDetectedActivities);
+        mDetectedActivitiesListView.setAdapter(mAdapter);
+
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
         populateGeofenceList();
@@ -221,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void onResult(Status status) {
+/*
         if (status.isSuccess()) {
             // Update state and save in shared preferences.
             mGeofencesAdded = !mGeofencesAdded;
@@ -238,11 +289,33 @@ public class MainActivity extends AppCompatActivity implements
                             R.string.geofences_removed),
                     Toast.LENGTH_SHORT
             ).show();
+
+
         } else {
             // Get the status code for the error and log it using a user-friendly message.
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
                     status.getStatusCode());
             Log.e(TAG, errorMessage);
+        }
+*/
+
+        if (status.isSuccess()) {
+            // Toggle the status of activity updates requested, and save in shared preferences.
+            boolean requestingUpdates = !getUpdatesRequestedState();
+            setUpdatesRequestedState(requestingUpdates);
+
+            // Update the UI. Requesting activity updates enables the Remove Activity Updates
+            // button, and removing activity updates enables the Add Activity Updates button.
+            setButtonsEnabledState();
+
+            Toast.makeText(
+                    this,
+                    getString(requestingUpdates ? R.string.activity_updates_added :
+                            R.string.activity_updates_removed),
+                    Toast.LENGTH_SHORT
+            ).show();
+        } else {
+            Log.e(TAG, "Error adding or removing activity detection: " + status.getStatusMessage());
         }
 
     }
@@ -294,6 +367,7 @@ public class MainActivity extends AppCompatActivity implements
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
+                .addApi(ActivityRecognition.API)
                 .build();
         createLocationRequest();
     }
@@ -331,16 +405,16 @@ public class MainActivity extends AppCompatActivity implements
      * Handles the Start Updates button and requests start of location updates. Does nothing if
      * updates have already been requested.
                     */
-            public void startUpdatesButtonHandler(View view) {
-                if (!mRequestingLocationUpdates) {
-                    mRequestingLocationUpdates = true;
-                    setButtonsEnabledState();
-                    startLocationUpdates();
+    public void startUpdatesButtonHandler(View view) {
+        if (!mRequestingLocationUpdates) {
+            mRequestingLocationUpdates = true;
+            setButtonsEnabledState();
+            startLocationUpdates();
 
-                    mLocationLogger = new DataLogger("location");
-                    mAccelLogger = new DataLogger("accelerometer");
-                    mLinearAccelLogger = new DataLogger("linear_accelerometer");
-                }
+            mLocationLogger = new DataLogger("location");
+            mAccelLogger = new DataLogger("accelerometer");
+            mLinearAccelLogger = new DataLogger("linear_accelerometer");
+        }
     }
 
     /**
@@ -381,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements
      * user is requesting location updates.
      */
     private void setButtonsEnabledState() {
-        if (mRequestingLocationUpdates) {
+/*        if (mRequestingLocationUpdates) {
             mStartUpdatesButton.setEnabled(false);
             mStopUpdatesButton.setEnabled(true);
         } else {
@@ -395,8 +469,48 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             mAddGeofencesButton.setEnabled(true);
             mRemoveGeofencesButton.setEnabled(false);
+        }*/
+
+        if (getUpdatesRequestedState()) {
+            mRequestActivityUpdatesButton.setEnabled(false);
+            mRemoveActivityUpdatesButton.setEnabled(true);
+        } else {
+            mRequestActivityUpdatesButton.setEnabled(true);
+            mRemoveActivityUpdatesButton.setEnabled(false);
         }
     }
+
+    /**
+     * Retrieves a SharedPreference object used to store or read values in this app. If a
+     * preferences file passed as the first argument to {@link #getSharedPreferences}
+     * does not exist, it is created when {@link SharedPreferences.Editor} is used to commit
+     * data.
+     */
+    private SharedPreferences getSharedPreferencesInstance() {
+        return getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+    }
+
+
+    /**
+     * Retrieves the boolean from SharedPreferences that tracks whether we are requesting activity
+     * updates.
+     */
+    private boolean getUpdatesRequestedState() {
+        return getSharedPreferencesInstance()
+                .getBoolean(Constants.ACTIVITY_UPDATES_REQUESTED_KEY, false);
+    }
+
+    /**
+     * Sets the boolean in SharedPreferences that tracks whether we are requesting activity
+     * updates.
+     */
+    private void setUpdatesRequestedState(boolean requestingUpdates) {
+        getSharedPreferencesInstance()
+                .edit()
+                .putBoolean(Constants.ACTIVITY_UPDATES_REQUESTED_KEY, requestingUpdates)
+                .commit();
+    }
+
 
     /**
      * Updates the latitude, the longitude, and the last location time in the UI.
@@ -442,7 +556,10 @@ public class MainActivity extends AppCompatActivity implements
             startLocationUpdates();
         }
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
+        // Register the broadcast receiver that informs this activity of the DetectedActivity
+        // object broadcast sent by the intent service.
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver,
+                new IntentFilter(Constants.BROADCAST_ACTION));
     }
 
     @Override
@@ -541,25 +658,25 @@ public class MainActivity extends AppCompatActivity implements
         super.onSaveInstanceState(savedInstanceState);
     }
 
-                public void onSensorChanged(SensorEvent event){
-                    if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                        float sensorX = event.values[0];
-                        float sensorY = event.values[1];
-                        float sensorZ = event.values[2];
-                        updateAccelerometer(sensorX, sensorY, sensorZ);
+    public void onSensorChanged(SensorEvent event){
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float sensorX = event.values[0];
+            float sensorY = event.values[1];
+            float sensorZ = event.values[2];
+            updateAccelerometer(sensorX, sensorY, sensorZ);
 
-                        if(mStartUpdatesButton.isEnabled()) {
-                            mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
-                        }
-                    }
-
-                    if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                        float sensorX = event.values[0];
-                        float sensorY = event.values[1];
-                        float sensorZ = event.values[2];
-                        if(mStartUpdatesButton.isEnabled()) {
-                            mLinearAccelLogger.logAccel(Float.toString(sensorX),Float.toString(sensorY),Float.toString(sensorZ));
+            if(mStartUpdatesButton.isEnabled()) {
+                mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
             }
+        }
+
+        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            float sensorX = event.values[0];
+            float sensorY = event.values[1];
+            float sensorZ = event.values[2];
+            if(mStartUpdatesButton.isEnabled()) {
+                mLinearAccelLogger.logAccel(Float.toString(sensorX),Float.toString(sensorY),Float.toString(sensorZ));
+    }
         }
     }
 
@@ -687,6 +804,86 @@ public class MainActivity extends AppCompatActivity implements
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
             logSecurityException(securityException);
+        }
+    }
+    /**
+     * Gets a PendingIntent to be sent for each activity detection.
+     */
+    private PendingIntent getActivityDetectionPendingIntent() {
+        Intent intent = new Intent(this, DetectedActivitiesIntentService.class);
+
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+        // requestActivityUpdates() and removeActivityUpdates().
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    /**
+     * Registers for activity recognition updates using
+     * {@link com.google.android.gms.location.ActivityRecognitionApi#requestActivityUpdates} which
+     * returns a {@link com.google.android.gms.common.api.PendingResult}. Since this activity
+     * implements the PendingResult interface, the activity itself receives the callback, and the
+     * code within {@code onResult} executes. Note: once {@code requestActivityUpdates()} completes
+     * successfully, the {@code DetectedActivitiesIntentService} starts receiving callbacks when
+     * activities are detected.
+     */
+    public void requestActivityUpdatesButtonHandler(View view) {
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, getString(R.string.not_connected),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
+                mGoogleApiClient,
+                Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
+                getActivityDetectionPendingIntent()
+        ).setResultCallback(this);
+    }
+
+    /**
+     * Removes activity recognition updates using
+     * {@link com.google.android.gms.location.ActivityRecognitionApi#removeActivityUpdates} which
+     * returns a {@link com.google.android.gms.common.api.PendingResult}. Since this activity
+     * implements the PendingResult interface, the activity itself receives the callback, and the
+     * code within {@code onResult} executes. Note: once {@code removeActivityUpdates()} completes
+     * successfully, the {@code DetectedActivitiesIntentService} stops receiving callbacks about
+     * detected activities.
+     */
+    public void removeActivityUpdatesButtonHandler(View view) {
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, getString(R.string.not_connected), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Remove all activity updates for the PendingIntent that was used to request activity
+        // updates.
+        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
+                mGoogleApiClient,
+                getActivityDetectionPendingIntent()
+        ).setResultCallback(this);
+    }
+
+
+    /**
+     * Processes the list of freshly detected activities. Asks the adapter to update its list of
+     * DetectedActivities with new {@code DetectedActivity} objects reflecting the latest detected
+     * activities.
+     */
+    protected void updateDetectedActivitiesList(ArrayList<DetectedActivity> detectedActivities) {
+        mAdapter.updateActivities(detectedActivities);
+    }
+
+    /**
+     * Receiver for intents sent by DetectedActivitiesIntentService via a sendBroadcast().
+     * Receives a list of one or more DetectedActivity objects associated with the current state of
+     * the device.
+     */
+    public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
+        protected static final String TAG = "activity-detection-response-receiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ArrayList<DetectedActivity> updatedActivities =
+                    intent.getParcelableArrayListExtra(Constants.ACTIVITY_EXTRA);
+            updateDetectedActivitiesList(updatedActivities);
         }
     }
 
