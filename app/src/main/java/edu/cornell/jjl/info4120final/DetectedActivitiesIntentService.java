@@ -34,6 +34,7 @@ import java.util.ArrayList;
 public class DetectedActivitiesIntentService extends IntentService {
 
     protected static final String TAG = "DetectedActivitiesIS";
+    protected DataLogger mActivityLogger;
 
     /**
      * This constructor is required, and calls the super IntentService(String)
@@ -47,6 +48,7 @@ public class DetectedActivitiesIntentService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        mActivityLogger = new DataLogger("activity_recognition");
     }
 
     /**
@@ -63,14 +65,18 @@ public class DetectedActivitiesIntentService extends IntentService {
         // device. Each activity is associated with a confidence level, which is an int between
         // 0 and 100.
         ArrayList<DetectedActivity> detectedActivities = (ArrayList) result.getProbableActivities();
-
+        mActivityLogger.logActivity(detectedActivities);
         // Log each activity.
         Log.i(TAG, "activities detected");
+        Log.i(TAG,Integer.toString(detectedActivities.size()));
         for (DetectedActivity da: detectedActivities) {
             Log.i(TAG, Constants.getActivityString(
                     getApplicationContext(),
                     da.getType()) + " " + da.getConfidence() + "%"
             );
+
+
+
         }
 
         // Broadcast the list of detected activities.

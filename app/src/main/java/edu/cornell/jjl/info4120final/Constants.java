@@ -93,6 +93,7 @@ public final class Constants {
             DetectedActivity.TILTING,
             DetectedActivity.UNKNOWN
     };
+
     /**
      * Returns a human readable String corresponding to a detected activity type.
      */

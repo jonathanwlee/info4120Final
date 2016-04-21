@@ -88,7 +88,9 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-    protected static final String TAG = "location-updates-sample";
+    protected static final String TAG = "main";
+    protected static final String TAG_LOCATION = "location";
+    protected static final String TAG_ACCEL = "accelerometer";
 
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
@@ -187,8 +189,6 @@ public class MainActivity extends AppCompatActivity implements
         GoogleReceiver receiver = new GoogleReceiver(this);
         lbc.registerReceiver(receiver, new IntentFilter(""));
 
-
-
         // Get the UI widgets.
         mRequestActivityUpdatesButton = (Button) findViewById(R.id.request_activity_updates_button);
         mRemoveActivityUpdatesButton = (Button) findViewById(R.id.remove_activity_updates_button);
@@ -228,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements
         mLocationLogger = new DataLogger("location");
         mAccelLogger = new DataLogger("accelerometer");
         mLinearAccelLogger = new DataLogger("linear_accelerometer");
+
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
 
@@ -348,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
                     mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
                 }
-                updateUI();
+                //updateUI();
             }
         }
 
@@ -573,9 +574,9 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStop() {
+        super.onStop();
         mGoogleApiClient.disconnect();
 
-        super.onStop();
     }
 
     /**
@@ -609,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements
             }
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            updateUI();
+            //updateUI();
         }
 
         // If the user presses the Start Updates button before GoogleApiClient connects, we set
@@ -627,9 +628,11 @@ public class MainActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-        updateUI();
-        Toast.makeText(this, getResources().getString(R.string.location_updated_message),
-                Toast.LENGTH_SHORT).show();
+        //updateUI();
+
+        //Toast.makeText(this, getResources().getString(R.string.location_updated_message), Toast.LENGTH_SHORT).show();
+        Log.i(TAG_LOCATION,"Latitude: " + Double.toString(mCurrentLocation.getLatitude()));
+        Log.i(TAG_LOCATION,"Longitude: " + Double.toString(mCurrentLocation.getLongitude()));
         mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
     }
 
@@ -663,7 +666,8 @@ public class MainActivity extends AppCompatActivity implements
             float sensorX = event.values[0];
             float sensorY = event.values[1];
             float sensorZ = event.values[2];
-            updateAccelerometer(sensorX, sensorY, sensorZ);
+            Log.i(TAG_ACCEL,"X: " + Float.toString(sensorX) + " Y: " + Float.toString(sensorY) + " Z: " + Float.toString(sensorZ));
+            //updateAccelerometer(sensorX, sensorY, sensorZ);
 
             if(mStartUpdatesButton.isEnabled()) {
                 mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
