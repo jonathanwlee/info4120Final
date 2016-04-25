@@ -1,19 +1,3 @@
-/**
- * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package edu.cornell.jjl.info4120final;
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -94,11 +78,24 @@ public class GeofenceTransitionsIntentService extends IntentService {
             // Send notification and log the transition details.
             sendNotification(geofenceTransitionDetails);
 
-            Intent geo_intent  = new Intent("geofence");
-            geo_intent.putExtra("Key",geofenceTransitionDetails);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
+
         } else {
             // Log the error.
+            Log.e(TAG, getString(R.string.geofence_transition_invalid_type, geofenceTransition));
+        }
+
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            Intent geo_intent  = new Intent("geofence");
+            geo_intent.putExtra("Key","Enter");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
+        }
+        else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+            Intent geo_intent  = new Intent("geofence");
+            geo_intent.putExtra("Key","Exit");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
+        }
+
+        else {
             Log.e(TAG, getString(R.string.geofence_transition_invalid_type, geofenceTransition));
         }
     }

@@ -30,16 +30,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -55,27 +52,12 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-
-import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
-/**
- * Getting Location Updates.
- *
- * Demonstrates how to use the Fused Location Provider API to get updates about a device's
- * location. The Fused Location Provider is part of the Google Play services location APIs.
- *
- * For a simpler example that shows the use of Google Play services to fetch the last known location
- * of a device, see
- * https://github.com/googlesamples/android-play-location/tree/master/BasicLocation.
- *
- * This sample uses Google Play services, but it does not require authentication. For a sample that
- * uses Google Play services for authentication, see
- * https://github.com/googlesamples/android-google-accounts/tree/master/QuickStart.
- */
+
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener, SensorEventListener, ResultCallback<Status> {
 
@@ -116,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements
      * Stores parameters for requests to the FusedLocationProviderApi.
      */
     protected LocationRequest mLocationRequest;
-
+    protected Handler handler;
     /**
      * Represents a geographical location.
      */
@@ -134,15 +116,12 @@ public class MainActivity extends AppCompatActivity implements
     protected String mLastUpdateTime;
 
 
-    // UI elements.
-
-    private ListView mDetectedActivitiesListView;
+    /**
+     * UI Elements
+     */
+    protected ListView mDetectedActivitiesListView;
     protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
-
-    private DetectedActivitiesAdapter mAdapter;
-
-    private Button startButton;
-    private Button stopButton;
+    protected DetectedActivitiesAdapter mAdapter;
 
     /**
      * The DetectedActivities that we track in this sample. We use this for initializing the
@@ -151,38 +130,39 @@ public class MainActivity extends AppCompatActivity implements
      * activity is displayed with the correct confidence level upon orientation changes.
      */
     private ArrayList<DetectedActivity> mDetectedActivities;
+
     /**
-     *
-     *\
+     *Sensor Managers for Accelerometer / Linear Accelerometer
      */
+
     protected SensorManager mSensorManager;
     protected Sensor mSensor;
 
+    /**
+     * Data loggers for writing to files
+     */
     protected DataLogger mLocationLogger;
     protected DataLogger mAccelLogger;
     protected DataLogger mLinearAccelLogger;
     protected DataLogger mActivityLogger;
 
-    private SharedPreferences mSharedPreferences;
-
+    protected SharedPreferences mSharedPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Initialize Broadcast Managers
         LocalBroadcastManager lbc = LocalBroadcastManager.getInstance(this);
-        GoogleReceiver receiver = new GoogleReceiver(this);
-        lbc.registerReceiver(receiver, new IntentFilter(""));
-
-        // Get the UI widgets.
-        mDetectedActivitiesListView = (ListView) findViewById(R.id.detected_activities_listview);
-        startButton = (Button) findViewById(R.id.start_update);
-        stopButton = (Button) findViewById(R.id.stop_update);
-
+        GeofenceReceiver receiver = new GeofenceReceiver(this);
+        lbc.registerReceiver(receiver, new IntentFilter("geofence"));
 
         // Get a receiver for broadcasts from ActivityDetectionIntentService.
         mBroadcastReceiver = new ActivityDetectionBroadcastReceiver();
+
+        // Get the UI widgets.
+        mDetectedActivitiesListView = (ListView) findViewById(R.id.detected_activities_listview);
 
         //Geofences Init
         mGeofenceList = new ArrayList<Geofence>();
@@ -194,8 +174,6 @@ public class MainActivity extends AppCompatActivity implements
         mRequestingUpdates = false;
         mLastUpdateTime = "";
 
-
-
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
 
@@ -204,8 +182,9 @@ public class MainActivity extends AppCompatActivity implements
                 MODE_PRIVATE);
 
         mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
-        setButtonsEnabledState();
+        populateGeofenceList();
 
+        startListening();
 
         // Reuse the value of mDetectedActivities from the bundle if possible. This maintains state
         // across device orientation changes. If mDetectedActivities is not stored in the bundle,
@@ -232,16 +211,16 @@ public class MainActivity extends AppCompatActivity implements
 
         // Kick off the process of building a GoogleApiClient and requesting the LocationServices
         // API.
-        populateGeofenceList();
-
         buildGoogleApiClient();
     }
 
     public void onResult(Status status) {
         if (status.isSuccess()) {
-            setButtonsEnabledState();
+
         }
     }
+
+
 
     /**
      * Updates fields based on data stored in the bundle.
@@ -256,7 +235,6 @@ public class MainActivity extends AppCompatActivity implements
             if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingUpdates = savedInstanceState.getBoolean(
                         REQUESTING_LOCATION_UPDATES_KEY);
-                setButtonsEnabledState();
             }
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
@@ -343,38 +321,30 @@ public class MainActivity extends AppCompatActivity implements
                 mGoogleApiClient, mLocationRequest, this);
     }
 
-    public void setStartUpdating(View view) {
-        mRequestingUpdates = true;
-        startLocationUpdates();
-        setButtonsEnabledState();
-        mAccelLogger = new DataLogger("accel");
-        mLocationLogger = new DataLogger("location");
-        mActivityLogger = new DataLogger("activity_recognition");
+    public void startListening() {
+        handler = new Handler();
+
+        final Runnable r = new Runnable() {
+            public void run() {
+                if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {}
+                else {
+                    mRequestingUpdates = mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false);
+
+                    if (mRequestingUpdates && mGoogleApiClient.isConnected()) {
+                        startLocationUpdates();
+                        mAccelLogger = new DataLogger("accel");
+                        mLocationLogger = new DataLogger("location");
+                        mActivityLogger = new DataLogger("activity_recognition");
+                    }
+                    else {
+                    }
+                }
+                handler.postDelayed(this, 1000);
+            }
+        };
+        handler.postDelayed(r, 1000);
     }
 
-    public void setStopUpdating(View view) {
-        mRequestingUpdates = false;
-        stopLocationUpdates();
-        setButtonsEnabledState();
-    }
-
-    /**
-     * Ensures that only one button is enabled at any time. The Start Updates button is enabled
-     * if the user is not requesting location updates. The Stop Updates button is enabled if the
-     * user is requesting location updates.
-     */
-    private void setButtonsEnabledState() {
-        if (mRequestingUpdates) {
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
-
-        }
-        else {
-            startButton.setEnabled(true);
-            stopButton.setEnabled(false);
-
-        }
-    }
 
     /**
      * Retrieves a SharedPreference object used to store or read values in this app. If a
@@ -427,33 +397,41 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
         if (mGoogleApiClient.isConnected()) {
-            stopLocationUpdates();
+            //stopLocationUpdates();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //Removes all callbacks and messages
+        handler.removeCallbacksAndMessages(null);
+        stopLocationUpdates();
+        mGoogleApiClient.disconnect();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        stopLocationUpdates();
-        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
-                mGoogleApiClient,
-                getActivityDetectionPendingIntent()
-        ).setResultCallback(this);
+
 
         try {
             // Remove geofences.
+           /* ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
+                    mGoogleApiClient,
+                    getActivityDetectionPendingIntent()
+            ).setResultCallback(this);
+
             LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     // This is the same pending intent that was used in addGeofences().
                     getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().
+            ).setResultCallback(this); // Result processed in onResult().*/
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
             logSecurityException(securityException);
         }
 
         if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
         }
     }
 
@@ -463,27 +441,26 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnected(Bundle connectionHint) {
         Log.i(TAG, "Connected to GoogleApiClient");
+         try {
+            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
+                    mGoogleApiClient,
+                    Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
+                    getActivityDetectionPendingIntent()
+            ).setResultCallback(this);
 
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
-                mGoogleApiClient,
-                Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
-                getActivityDetectionPendingIntent()
-        ).setResultCallback(this);
-
-            try {
-                LocationServices.GeofencingApi.addGeofences(
-                        mGoogleApiClient,
-                        // The GeofenceRequest object.
-                        getGeofencingRequest(),
-                        // A pending intent that that is reused when calling removeGeofences(). This
-                        // pending intent is used to generate an intent when a matched geofence
-                        // transition is observed.
-                        getGeofencePendingIntent()
-                ).setResultCallback(this); // Result processed in onResult().
-            } catch (SecurityException securityException) {
-                // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
-                logSecurityException(securityException);
-            }
+            LocationServices.GeofencingApi.addGeofences(
+                    mGoogleApiClient,
+                    // The GeofenceRequest object.
+                    getGeofencingRequest(),
+                    // A pending intent that that is reused when calling removeGeofences(). This
+                    // pending intent is used to generate an intent when a matched geofence
+                    // transition is observed.
+                    getGeofencePendingIntent()
+            ).setResultCallback(this); // Result processed in onResult().
+        } catch (SecurityException securityException) {
+            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+            logSecurityException(securityException);
+        }
 
             // If the initial location was never previously requested, we use
             // FusedLocationApi.getLastLocation() to get it. If it was previously requested, we store
@@ -573,7 +550,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     /**
@@ -618,7 +594,7 @@ public class MainActivity extends AppCompatActivity implements
      * the user's location.
      */
     public void populateGeofenceList() {
-        for (Map.Entry<String, LatLng> entry : Constants.BAY_AREA_LANDMARKS.entrySet()) {
+        for (Map.Entry<String, LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
 
             mGeofenceList.add(new Geofence.Builder()
                     // Set the request ID of the geofence. This is a string to identify this
@@ -687,18 +663,31 @@ public class MainActivity extends AppCompatActivity implements
             updateDetectedActivitiesList(updatedActivities);
         }
     }
-
-    static class GoogleReceiver extends BroadcastReceiver {
+    /**
+     * Receiver for geofence intents
+     */
+    public class GeofenceReceiver extends BroadcastReceiver {
 
         MainActivity mActivity;
+        SharedPreferences mSharedPreferences;
 
-        public GoogleReceiver(Activity activity){
-            mActivity = (MainActivity) activity;
-        }
+        public GeofenceReceiver(Activity activity){
+                    mActivity = (MainActivity) activity;
+                }
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.i("geo",intent.getStringExtra("Key"));
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    Log.i("geo",intent.getStringExtra("Key"));
+                    SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
+                    if (intent.getStringExtra("Key") =="Enter") {
+                        Log.i("geo","Entered If");
+                        sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
+
+                    }
+                    else if (intent.getStringExtra("Key") == "Exit") {
+                        Log.i("geo",intent.getStringExtra("Key"));
+                        sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
+            }
         }
     }
 }
