@@ -92,9 +92,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
             );
 
             // Send notification and log the transition details.
-            //sendNotification(geofenceTransitionDetails);
+            sendNotification(geofenceTransitionDetails);
 
-            Intent geo_intent  = new Intent("geofence_intent");
+            Intent geo_intent  = new Intent("geofence");
             geo_intent.putExtra("Key",geofenceTransitionDetails);
             LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
         } else {

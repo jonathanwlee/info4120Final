@@ -698,8 +698,6 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
-
             Log.i("geo",intent.getStringExtra("Key"));
         }
     }
