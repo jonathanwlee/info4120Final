@@ -26,20 +26,24 @@ public class ParkingAnalyzer {
 
 
     public long timeInLot() {
-        Date first = (Date) accelerometerData.keySet().toArray()[0];
-        Date last = (Date) accelerometerData.keySet().toArray()[accelerometerData.size()-1];
-
         Set<Date> keyset = accelerometerData.keySet();
-        Date min = new Date(Long.MIN_VALUE);
+        Date min = new Date(Long.MAX_VALUE);
+        Date max = new Date(Long.MIN_VALUE);
+        //Find Earliest Time
         for (int i=0;i<keyset.size()-1;i++) {
             if(((Date) (keyset.toArray()[i])).compareTo(min) < 0) {
                 min = (Date) keyset.toArray()[i];
             }
         }
+        //Fin Latest Time
+        for (int i=0;i<keyset.size()-1;i++) {
+            if(((Date) (keyset.toArray()[i])).compareTo(max) > 0) {
+                max = (Date) keyset.toArray()[i];
+            }
+        }
+        Log.i("DATE:MIN",min.toString());
+        Log.i("DATE:MAX",max.toString());
 
-        Log.i("DATE:1",min.toString());
-        Log.i("DATE:2",last.toString());
-
-        return (last.getTime() - first.getTime()) / DateUtils.SECOND_IN_MILLIS;
+        return (max.getTime() - min.getTime()) / DateUtils.SECOND_IN_MILLIS;
     }
 }

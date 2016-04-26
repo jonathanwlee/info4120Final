@@ -76,7 +76,7 @@ public class ParkingParser {
         finally
         {
             try {
-                Log.i("Tokens:Accel", Integer.toString(accelerometerData.size()));
+                //Log.i("Tokens:Accel", Integer.toString(accelerometerData.size()));
                 fileReader.close();
             } catch (IOException e) {
                 e.printStackTrace();

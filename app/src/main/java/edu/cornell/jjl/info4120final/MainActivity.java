@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements
 
         //Testing
         ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
-        Log.i("TIMEINLOT: ", Long.toString(parkingAnalyzer.timeInLot()));
+        Log.i("Time in Lot: ", Long.toString(parkingAnalyzer.timeInLot()));
     }
 
     public void onResult(Status status) {
