@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class ParkingParse {
+public class ParkingParser {
 
     protected String fileName;
     protected String accelerometerFileName;
@@ -28,7 +28,7 @@ public class ParkingParse {
 
     protected SimpleDateFormat sdf;
 
-    public ParkingParse(String date) {
+    public ParkingParser(String date) {
         this.fileName = date;
 
         File storage = Environment.getExternalStorageDirectory();
@@ -107,7 +107,7 @@ public class ParkingParse {
                                     Integer.valueOf(tokens[7]),Integer.valueOf(tokens[8]));
 
                     activityRecogData.put(sdf.parse(tokens[0]),activityRecog);
-                    Log.i("token","running inside");
+                    Log.i("tokendate:location", sdf.parse(tokens[0]).toString());
 
                 }
                 notFirst = true;

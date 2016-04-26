@@ -199,8 +199,8 @@ public class MainActivity extends AppCompatActivity implements
         buildGoogleApiClient();
 
         //Testing
-        ParkingParse parker = new ParkingParse("log_2016-04-23_17-47-05");
-
+        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
+        Log.i("TIMEINLOT: ", Long.toString(parkingAnalyzer.timeInLot()));
     }
 
     public void onResult(Status status) {
