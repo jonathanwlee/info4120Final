@@ -51,4 +51,19 @@ public class ParkingAnalyzer {
        // Log.i("DATE:MAX",max.toString());
         return (max.getTime() - min.getTime()) / DateUtils.SECOND_IN_MILLIS;
     }
+
+    //http://stackoverflow.com/questions/837872/calculate-distance-in-meters-when-you-know-longitude-and-latitude-in-java
+    public float distFromPOI(LatLng latlng1, LatLng latlng2) {
+        double earthRadius = 6371000; //meters
+        double dLat = Math.toRadians(latlng2.latitude-latlng1.latitude);
+        double dLng = Math.toRadians(latlng2.longitude-latlng1.longitude);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(latlng1.latitude)) * Math.cos(Math.toRadians(latlng1.latitude)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        float dist = (float) (earthRadius * c);
+
+        return dist;
+
+    }
 }
