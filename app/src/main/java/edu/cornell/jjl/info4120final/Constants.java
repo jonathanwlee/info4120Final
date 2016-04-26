@@ -63,10 +63,15 @@ public final class Constants {
      * Map for storing information about parking lots.
      */
     public static final HashMap<String, LatLng> PARKING_LOTS = new HashMap<String, LatLng>();
+    public static final HashMap<String, LatLng> PARKING_LOTS_POI = new HashMap<String,LatLng>();
     static {
         // 206 College
         PARKING_LOTS.put("206 College", new LatLng(42.4443992, -76.4823802));
+        // 206 College
+        PARKING_LOTS_POI.put("206 College", new LatLng(42.4443992, -76.4823802));
 
+        // Duffield.
+        PARKING_LOTS.put("Duffield", new LatLng(42.4399834,-76.4851814));
         // Duffield.
         PARKING_LOTS.put("Duffield", new LatLng(42.4399834,-76.4851814));
 }
