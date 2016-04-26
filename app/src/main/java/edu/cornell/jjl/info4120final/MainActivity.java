@@ -209,8 +209,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
-
     /**
      * Updates fields based on data stored in the bundle.
      *
