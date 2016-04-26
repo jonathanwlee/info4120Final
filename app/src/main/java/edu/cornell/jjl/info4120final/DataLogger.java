@@ -53,9 +53,9 @@ public class DataLogger {
             e.printStackTrace();
         }
 
-        // Testing: was written file successful?
-        //readAndPrintFile(file);
-    }
+            // Testing: was written file successful?
+            //readAndPrintFile(file);
+        }
 
     public void logAccel(String x, String y, String z) {
         File file = new File(logFilePath, logFileName);

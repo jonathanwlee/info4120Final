@@ -1,19 +1,7 @@
 package edu.cornell.jjl.info4120final;
 
-import java.util.HashMap;
-
+/**
+ * Created by jjl on 4/25/2016.
+ */
 public class ParkingAnalyzer {
-
-    public ParkingAnalyzer() {
-    }
-
-    public int madeLoop() {
-        return 0;
-    }
-
-    public int distanceFromPOI() {
-        return 0;
-    }
-
-
 }
