@@ -27,7 +27,7 @@ import android.widget.TextView;
 import com.google.android.gms.location.DetectedActivity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Adapter that is backed by an array of {@code DetectedActivity} objects. Finds UI elements in the
@@ -69,7 +69,7 @@ public class DetectedActivitiesAdapter extends ArrayAdapter<DetectedActivity> {
      * @param detectedActivities the freshly detected activities
      */
     protected void updateActivities(ArrayList<DetectedActivity> detectedActivities) {
-        HashMap<Integer, Integer> detectedActivitiesMap = new HashMap<>();
+        LinkedHashMap<Integer, Integer> detectedActivitiesMap = new LinkedHashMap<>();
         for (DetectedActivity activity : detectedActivities) {
             detectedActivitiesMap.put(activity.getType(), activity.getConfidence());
         }

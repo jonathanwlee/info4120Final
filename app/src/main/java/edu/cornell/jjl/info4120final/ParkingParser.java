@@ -12,8 +12,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
+import java.util.LinkedHashMap;
 
 public class ParkingParser {
 
@@ -22,9 +22,9 @@ public class ParkingParser {
     protected String locationFileName;
     protected String activityRecogntionFileName;
 
-    protected HashMap<Date,LatLng> locationData = new HashMap<Date,LatLng>();
-    protected HashMap<Date,Accel> accelerometerData = new HashMap<Date,Accel>();
-    protected HashMap<Date, ActivityRecog> activityRecogData = new HashMap<Date,ActivityRecog>();
+    protected LinkedHashMap<Date,LatLng> locationData = new LinkedHashMap<Date,LatLng>();
+    protected LinkedHashMap<Date,Accel> accelerometerData = new LinkedHashMap<Date,Accel>();
+    protected LinkedHashMap<Date, ActivityRecog> activityRecogData = new LinkedHashMap<Date,ActivityRecog>();
 
     protected SimpleDateFormat sdf;
 
@@ -76,7 +76,6 @@ public class ParkingParser {
         finally
         {
             try {
-                //Log.i("Tokens:Accel", Integer.toString(accelerometerData.size()));
                 fileReader.close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -93,24 +92,20 @@ public class ParkingParser {
             String line = "";
             //Create the file reader
             fileReader = new BufferedReader(new FileReader(activityRecogntionFileName));
-            boolean notFirst = false;
+            fileReader.readLine();
             //Read the file line by line
             while ((line = fileReader.readLine()) != null)
             {
+
                 //Get all tokens available in line
                 String[] tokens = line.split(DELIMITER);
-                Log.i("token","ran");
 
-                if (notFirst) {
-                    ActivityRecog activityRecog= new ActivityRecog(Integer.valueOf(tokens[1]),Integer.valueOf(tokens[2])
-                    ,Integer.valueOf(tokens[3]),Integer.valueOf(tokens[4]),Integer.valueOf(tokens[5]),Integer.valueOf(tokens[6]),
-                                    Integer.valueOf(tokens[7]),Integer.valueOf(tokens[8]));
+                ActivityRecog activityRecog= new ActivityRecog(Integer.valueOf(tokens[1]),Integer.valueOf(tokens[2])
+                ,Integer.valueOf(tokens[3]),Integer.valueOf(tokens[4]),Integer.valueOf(tokens[5]),Integer.valueOf(tokens[6]),
+                                Integer.valueOf(tokens[7]),Integer.valueOf(tokens[8]));
 
-                    activityRecogData.put(sdf.parse(tokens[0]),activityRecog);
-                    Log.i("tokendate:location", sdf.parse(tokens[0]).toString());
+                activityRecogData.put(sdf.parse(tokens[0]),activityRecog);
 
-                }
-                notFirst = true;
             }
         }
             catch (Exception e) {
@@ -119,7 +114,6 @@ public class ParkingParser {
             finally
             {
                 try {
-                    Log.i("Tokens:ActivityRecog", Integer.toString(activityRecogData.size()));
                     fileReader.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -142,12 +136,10 @@ public class ParkingParser {
             {
                 //Get all tokens available in line
                 String[] tokens = line.split(DELIMITER);
-                Log.i("token","ran");
 
                 if (notFirst) {
                     LatLng location = new LatLng(Double.valueOf(tokens[1]),Double.valueOf(tokens[2]));
                     locationData.put(sdf.parse(tokens[0]),location);
-                    Log.i("token","running inside");
 
                 }
                 notFirst = true;
@@ -159,7 +151,6 @@ public class ParkingParser {
         finally
         {
             try {
-                Log.i("Tokens:Location", Integer.toString(locationData.size()));
                 fileReader.close();
             } catch (IOException e) {
                 e.printStackTrace();

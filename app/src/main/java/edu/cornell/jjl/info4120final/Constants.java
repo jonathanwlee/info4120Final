@@ -22,7 +22,7 @@ import android.content.res.Resources;
 
 import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.maps.model.LatLng;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Constants used in this sample.
@@ -62,8 +62,8 @@ public final class Constants {
     /**
      * Map for storing information about parking lots.
      */
-    public static final HashMap<String, LatLng> PARKING_LOTS = new HashMap<String, LatLng>();
-    public static final HashMap<String, LatLng> PARKING_LOTS_POI = new HashMap<String,LatLng>();
+    public static final LinkedHashMap<String, LatLng> PARKING_LOTS = new LinkedHashMap<String, LatLng>();
+    public static final LinkedHashMap<String, LatLng> PARKING_LOTS_POI = new LinkedHashMap<String,LatLng>();
     static {
         // 206 College
         PARKING_LOTS.put("206 College", new LatLng(42.4443992, -76.4823802));
