@@ -36,7 +36,7 @@ public final class Constants {
 
     public static final String BROADCAST_ACTION = PACKAGE_NAME + ".BROADCAST_ACTION";
 
-    public static final String ACTIVITY_EXTRA = PACKAGE_NAME + ".ACTIVITY_EXTRA";
+    public static final String ACTIVITY_EXTRA    = PACKAGE_NAME + ".ACTIVITY_EXTRA";
 
     public static final String SHARED_PREFERENCES_NAME = PACKAGE_NAME + ".SHARED_PREFERENCES_NAME";
 
@@ -57,28 +57,30 @@ public final class Constants {
      */
     public static final long GEOFENCE_EXPIRATION_IN_MILLISECONDS =
             GEOFENCE_EXPIRATION_IN_HOURS * 60 * 60 * 1000;
-    public static final float GEOFENCE_RADIUS_IN_METERS = 20; // 1 mile, 1.6 km
+    public static final float GEOFENCE_RADIUS_IN_METERS = 100; // 1 mile, 1.6 km
 
     /**
      * Map for storing information about parking lots.
      */
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS = new LinkedHashMap<String, LatLng>();
+    public static final LinkedHashMap<String, LatLng> PARKING_LOTS_ENTRANCE = new LinkedHashMap<String,LatLng>();
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_POI = new LinkedHashMap<String,LatLng>();
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_LOOPS = new LinkedHashMap<String,LatLng>();
 
     static {
         // 206 College
-        PARKING_LOTS.put("206 College", new LatLng(42.4443992, -76.4823802));
-        PARKING_LOTS_POI.put("206 College", new LatLng(42.4443992, -76.4823802));
-        PARKING_LOTS_LOOPS.put("206 College", new LatLng(42.445321, -76.483498));
+        PARKING_LOTS.put("Sage", new LatLng(42.4451613, -76.484061));
+        PARKING_LOTS_POI.put("Sage", new LatLng(42.445544, -76.483390));
+        PARKING_LOTS_LOOPS.put("Sage", new LatLng(42.445321, -76.483498));
+        PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
 
         // Duffield.
-        PARKING_LOTS.put("Duffield", new LatLng(42.4399834, -76.4851814));
-        PARKING_LOTS.put("Duffield", new LatLng(42.4399834, -76.4851814));
-        PARKING_LOTS_LOOPS.put("Duffield", new LatLng(42.4443992, -76.4823802));
+        PARKING_LOTS.put("College", new LatLng(42.447753, -76.485285));
+        PARKING_LOTS_POI.put("College", new LatLng(42.4399834, -76.4851814));
+        PARKING_LOTS_LOOPS.put("College", new LatLng(42.4443992, -76.4823802));
+        PARKING_LOTS_ENTRANCE.put("College", new LatLng(42.445321, -76.483498));
+
     }
-
-
 
     /**
      * The desired time between activity detections. Larger values result in fewer activity
@@ -86,7 +88,7 @@ public final class Constants {
      * fastest possible rate. Getting frequent updates negatively impact battery life and a real
      * app may prefer to request less frequent updates.
      */
-    public static final long DETECTION_INTERVAL_IN_MILLISECONDS = 0;
+    public static final long DETECTION_INTERVAL_IN_MILLISECONDS = 500;
 
     /**
      * List of DetectedActivity types that we monitor in this sample.

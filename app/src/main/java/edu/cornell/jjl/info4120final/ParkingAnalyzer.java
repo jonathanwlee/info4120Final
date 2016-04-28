@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ParkingAnalyzer {
-    String parkingLot = "206 College";
+    String parkingLot = "Sage";
     ParkingParser parser;
 
     protected boolean exitsOnFoot;
@@ -46,25 +46,16 @@ public class ParkingAnalyzer {
     }
 
     public int numberOfStops() {
-
         for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
             Date key = entry.getKey();
             Accel value = entry.getValue();
             //Magnitude
-            findMagnitude(value.x, value.y, value.z,);
-
-
         }
-
-
-
 
         return 0;
     }
 
-
     public double findMagnitude(float x, float y, float z) {
-
         return 0;
     }
 

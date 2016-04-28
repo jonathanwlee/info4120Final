@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
+    protected static String CURRENT_PARKING_LOT_KEY = "Sage Hall";
     protected final static String LOCATION_KEY = "location-key";
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
@@ -94,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements
      * Start Updates and Stop Updates buttons.
      */
     protected Boolean mRequestingUpdates;
+
+    protected Boolean mSavingUpdates;
 
     /**
      * Time when the location was updated represented as a String.
@@ -157,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         mRequestingUpdates = false;
+        mSavingUpdates = false;
         mLastUpdateTime = "";
 
         // Update values using data stored in the Bundle.
@@ -202,6 +206,9 @@ public class MainActivity extends AppCompatActivity implements
         ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
         parkingAnalyzer.numberOfLoops();
         Log.i("TimeInLot:", Long.toString(parkingAnalyzer.timeInLot()));
+
+        //LatLng loc = new LatLng(42.445400,-76.483871);
+        //Log.i("DISTANCE FOR METERS: " , Double.toString(parkingAnalyzer.distFromPOI(loc,Constants.PARKING_LOTS.get("Sage Hall"))));
     }
 
     public void onResult(Status status) {
@@ -220,10 +227,10 @@ public class MainActivity extends AppCompatActivity implements
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
-            if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
+          /*  if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
                 mRequestingUpdates = savedInstanceState.getBoolean(
                         REQUESTING_LOCATION_UPDATES_KEY);
-            }
+            }*/
 
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the
             // correct latitude and longitude.
@@ -314,25 +321,27 @@ public class MainActivity extends AppCompatActivity implements
 
         final Runnable r = new Runnable() {
             public void run() {
-                if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {}
-                else {
-                    mRequestingUpdates = mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false);
+                if (mGoogleApiClient.isConnected()) {
+                    //If the same
+                    if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {
+                    } else {
+                        mRequestingUpdates = mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false);
 
-                    if (mRequestingUpdates && mGoogleApiClient.isConnected()) {
-                        startLocationUpdates();
-                        mAccelLogger = new DataLogger("accel");
-                        mLocationLogger = new DataLogger("location");
-                        mActivityLogger = new DataLogger("activity_recognition");
-                    }
-                    else {
+                        if (mRequestingUpdates) {
+                            startLocationUpdates();
+                            mAccelLogger = new DataLogger("accel");
+                            mLocationLogger = new DataLogger("location");
+                            mActivityLogger = new DataLogger("activity_recognition");
+                        } else {
+                        }
                     }
                 }
+
                 handler.postDelayed(this, 1000);
             }
         };
         handler.postDelayed(r, 1000);
     }
-
 
     /**
      * Retrieves a SharedPreference object used to store or read values in this app. If a
@@ -383,9 +392,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
         if (mGoogleApiClient.isConnected()) {
-            //stopLocationUpdates();
         }
     }
     @Override
@@ -394,6 +401,8 @@ public class MainActivity extends AppCompatActivity implements
         //Removes all callbacks and messages
         handler.removeCallbacksAndMessages(null);
         stopLocationUpdates();
+        mRequestingUpdates = false;
+        mSharedPreferences.edit().remove(REQUESTING_LOCATION_UPDATES_KEY).commit();
         mGoogleApiClient.disconnect();
     }
 
@@ -403,17 +412,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
         try {
-            // Remove geofences.
-           /* ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(
-                    mGoogleApiClient,
-                    getActivityDetectionPendingIntent()
-            ).setResultCallback(this);
-
-            LocationServices.GeofencingApi.removeGeofences(
-                    mGoogleApiClient,
-                    // This is the same pending intent that was used in addGeofences().
-                    getGeofencePendingIntent()
-            ).setResultCallback(this); // Result processed in onResult().*/
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
             logSecurityException(securityException);
@@ -428,8 +426,9 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "Connected to GoogleApiClient");
-         try {
+        Log.i(TAG, "Connected...");
+
+        try {
             ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
                     mGoogleApiClient,
                     Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
@@ -495,7 +494,27 @@ public class MainActivity extends AppCompatActivity implements
         if (mRequestingUpdates) {
             Log.i(TAG_LOCATION, "Latitude: " + Double.toString(mCurrentLocation.getLatitude()));
             Log.i(TAG_LOCATION, "Longitude: " + Double.toString(mCurrentLocation.getLongitude()));
-            mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
+
+/*
+            String currentParkingLot = mSharedPreferences.getString(CURRENT_PARKING_LOT_KEY,"none");
+            Location mCurrentParkingLotLocation = new Location("Current Parking Lot");
+            if (currentParkingLot == "none") {
+            }
+            else {
+                mCurrentParkingLotLocation.setLongitude(Constants.PARKING_LOTS_ENTRANCE.get(currentParkingLot).longitude);
+                mCurrentParkingLotLocation.setLatitude(Constants.PARKING_LOTS_ENTRANCE.get(currentParkingLot).latitude);
+                //Log.i(TAG_LOCATION + " distance to", Double.toString(location.distanceTo(mCurrentParkingLotLocation)));
+                */
+/*if (location.distanceTo(mCurrentParkingLotLocation) < 5) {
+                    mSavingUpdates = true;
+                }*//*
+
+            }
+*/
+
+            if (mRequestingUpdates && mGoogleApiClient.isConnected()) {
+                //mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
+            }
         }
     }
 
@@ -529,7 +548,6 @@ public class MainActivity extends AppCompatActivity implements
             float sensorX = event.values[0];
             float sensorY = event.values[1];
             float sensorZ = event.values[2];
-            //Log.i(TAG_ACCEL,"X: " + Float.toString(sensorX) + " Y: " + Float.toString(sensorY) + " Z: " + Float.toString(sensorZ));
             if (mRequestingUpdates) {
                mAccelLogger.logAccel(Float.toString(sensorX), Float.toString(sensorY), Float.toString(sensorZ));
             }
@@ -537,8 +555,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     /**
      * Builds and returns a GeofencingRequest. Specifies the list of geofences to be monitored.
@@ -648,6 +665,7 @@ public class MainActivity extends AppCompatActivity implements
                 mActivityLogger.logActivity(updatedActivities);
             }
 
+            //Update activity list.
             updateDetectedActivitiesList(updatedActivities);
         }
     }
@@ -665,17 +683,23 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("Geo",intent.getStringExtra("Key"));
             SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
-            if (intent.getStringExtra("Key") =="Enter") {
-                Log.i("geo","Entered If");
+            if (intent.getStringExtra("Key").contains("Entered:"))
+            {
+                Log.i("GEO","entered");
+               // Log.i("GEO", Boolean.toString(sharedPrefs.getBoolean(REQUESTING_LOCATION_UPDATES_KEY,false)));
+                //Start Requesting Updates.
                 sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
 
+                //Determine Current Parking Lot
+                sharedPrefs.edit().putString(CURRENT_PARKING_LOT_KEY,intent.getStringExtra("Key").split(" ")[1]).commit();
             }
-            else if (intent.getStringExtra("Key") == "Exit") {
-                Log.i("geo",intent.getStringExtra("Key"));
+            else if (intent.getStringExtra("Key").contains("Exited:"))
+            {
+                //On exit, no current parking lot and no updates.
+                sharedPrefs.edit().putString(CURRENT_PARKING_LOT_KEY,"none").commit();
                 sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
-    }
+            }
         }
     }
 }

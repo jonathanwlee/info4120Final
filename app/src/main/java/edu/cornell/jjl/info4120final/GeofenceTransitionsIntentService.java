@@ -77,21 +77,38 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
             // Send notification and log the transition details.
             sendNotification(geofenceTransitionDetails);
-
-
         } else {
             // Log the error.
             Log.e(TAG, getString(R.string.geofence_transition_invalid_type, geofenceTransition));
         }
 
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+
+            // Get the transition details as a String.
+            String geofenceTransitionDetails = getGeofenceTransitionDetails(
+                    this,
+                    geofenceTransition,
+                    triggeringGeofences
+            );
+
             Intent geo_intent  = new Intent("geofence");
-            geo_intent.putExtra("Key","Enter");
+            geo_intent.putExtra("Key",geofenceTransitionDetails);
             LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
         }
         else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+
+            List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+
+            // Get the transition details as a String.
+            String geofenceTransitionDetails = getGeofenceTransitionDetails(
+                    this,
+                    geofenceTransition,
+                    triggeringGeofences
+            );
+
             Intent geo_intent  = new Intent("geofence");
-            geo_intent.putExtra("Key","Exit");
+            geo_intent.putExtra("Key",geofenceTransitionDetails);
             LocalBroadcastManager.getInstance(this).sendBroadcast(geo_intent);
         }
 
