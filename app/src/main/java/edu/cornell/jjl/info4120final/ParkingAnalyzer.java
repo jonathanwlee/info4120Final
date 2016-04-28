@@ -1,21 +1,15 @@
 package edu.cornell.jjl.info4120final;
 
-
-import android.app.Activity;
 import android.location.Location;
 import android.text.format.DateUtils;
 import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.LinkedHashMap;
 
 public class ParkingAnalyzer {
 
@@ -37,11 +31,11 @@ public class ParkingAnalyzer {
 
 
     public LatLng findParkingLocation() {
-        long minDiff = -1, walkingTimestamp = findParkedTimestamp().getTime();
+        long minDiff = -1, stillTimestamp = findParkedTimestamp().getTime();
         Date nearestDate = null;
 
         for (Date date : locationData.keySet()) {
-            long diff = Math.abs(walkingTimestamp - date.getTime());
+            long diff = Math.abs(stillTimestamp - date.getTime());
             if ((minDiff == -1) || (diff < minDiff)) {
                 minDiff = diff;
                 nearestDate = date;
@@ -49,7 +43,6 @@ public class ParkingAnalyzer {
         }
         return locationData.get(nearestDate);
     }
-
 
     public Date findParkedTimestamp() {
         Date parkingTimestamp = new Date(Long.MIN_VALUE);
@@ -84,24 +77,19 @@ public class ParkingAnalyzer {
      */
     public long timeInLot() {
         Set<Date> keyset = accelerometerData.keySet();
-        Date min = new Date(Long.MAX_VALUE);
-        Date max = new Date(Long.MIN_VALUE);
+        Date start = new Date(Long.MAX_VALUE);
+        Date end = new Date(Long.MIN_VALUE);
 
         //Find Earliest Time
         for (int i = 0; i < keyset.size() - 1; i++) {
-            if (((Date) (keyset.toArray()[i])).compareTo(min) < 0) {
-                min = (Date) keyset.toArray()[i];
+            if (((Date) (keyset.toArray()[i])).compareTo(start) < 0) {
+                start = (Date) keyset.toArray()[i];
             }
         }
 
-        //Find Latest Time
-        for (int i = 0; i < keyset.size() - 1; i++) {
-            if (((Date) (keyset.toArray()[i])).compareTo(max) > 0) {
-                max = (Date) keyset.toArray()[i];
-            }
-        }
-
-        return (max.getTime() - min.getTime()) / DateUtils.SECOND_IN_MILLIS;
+        //Find when still
+        end = findParkedTimestamp();
+        return (end.getTime() - start.getTime()) / DateUtils.SECOND_IN_MILLIS;
     }
 
     public double distFromPOI(LatLng latlng1, LatLng latlng2) {
@@ -114,5 +102,37 @@ public class ParkingAnalyzer {
         locParking.setLongitude(latlng2.longitude);
 
         return locPOI.distanceTo(locParking);
+    }
+
+    public int numberOfLoops() {
+        int loops = 0;
+        boolean entered = false;
+        boolean far = false;
+        for (Map.Entry<Date, LatLng> entry : locationData.entrySet()) {
+            Date key = entry.getKey();
+            LatLng value = entry.getValue();
+
+            //Starts checking. It has passed the loop / entered
+            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) < 5) {
+                entered = true;
+            }
+
+            if (entered) {
+                //If entered, make sure far enough away.
+                if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) > 5) {
+                    far = true;
+                }
+            }
+            //Close again. Must have been a loop. Add one. Reset.
+            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) < 5 && far) {
+                loops++;
+                entered = false;
+                far = false;
+            }
+
+            Log.i("DISTANCE FROM", Double.toString(distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value)));
+            //Log.i("ARRAY CONTENTS:",value.toString());
+         }
+    return loops;
     }
 }
