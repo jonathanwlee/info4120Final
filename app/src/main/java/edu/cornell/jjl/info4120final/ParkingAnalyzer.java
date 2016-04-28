@@ -16,6 +16,9 @@ public class ParkingAnalyzer {
     ParkingParser parser;
 
     protected boolean exitsOnFoot;
+    protected int numberOfLoops;
+    protected double distanceFromPOI;
+    protected long timeInLot;
 
     protected LinkedHashMap<Date, LatLng> locationData = new LinkedHashMap<Date, LatLng>();
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
@@ -26,14 +29,25 @@ public class ParkingAnalyzer {
         this.locationData = parser.locationData;
         this.accelerometerData = parser.accelerometerData;
         this.activityRecogData = parser.activityRecogData;
+        init();
+    }
+
+    public void init() {
         this.exitsOnFoot = exitsOnFoot();
-        Log.i("Exits on Foot", Boolean.toString(exitsOnFoot));
+        this.numberOfLoops = numberOfLoops();
+        this.distanceFromPOI = distFromPOI(findParkingLocation(),Constants.PARKING_LOTS_POI.get(parkingLot));
+        this.timeInLot = timeInLot();
+
+        Log.i("Variables", Boolean.toString(exitsOnFoot));
+        Log.i("Variables", Integer.toString(numberOfLoops));
+        Log.i("Variables", Double.toString(distanceFromPOI));
+        Log.i("Variables", Long.toString(timeInLot));
+
     }
 
     public int numberOfStops() {
         return 0;
     }
-
 
     public LatLng findParkingLocation() {
         long minDiff = -1, stillTimestamp = findParkedTimestamp().getTime();
@@ -158,5 +172,39 @@ public class ParkingAnalyzer {
          }
         Log.i("Loops Number",Integer.toString(loops));
     return loops;
+    }
+
+
+    /**
+    Implements Rule tree for determining parking availability.
+     */
+    public int determineParkingAvailability() {
+
+        double thresholdPOIClose = 50;
+        double thresholdPOIFar = 50;
+
+        if (!exitsOnFoot) {
+            return 0;
+        }
+        else {
+            //Walking and Number loops == 0
+            if (numberOfLoops == 0 ) {
+
+                //Distance Close
+                if (distanceFromPOI > thresholdPOIClose) {
+                }
+
+                //Distance Far
+                else {
+                }
+
+            }
+
+
+
+        }
+
+        return 0;
+
     }
 }
