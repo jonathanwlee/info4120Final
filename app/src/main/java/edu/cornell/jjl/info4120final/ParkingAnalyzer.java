@@ -14,6 +14,9 @@ import java.util.Set;
 public class ParkingAnalyzer {
     String parkingLot = "206 College";
     ParkingParser parser;
+
+    protected boolean exitsOnFoot;
+
     protected LinkedHashMap<Date, LatLng> locationData = new LinkedHashMap<Date, LatLng>();
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
     protected LinkedHashMap<Date, ActivityRecog> activityRecogData = new LinkedHashMap<Date, ActivityRecog>();
@@ -23,6 +26,8 @@ public class ParkingAnalyzer {
         this.locationData = parser.locationData;
         this.accelerometerData = parser.accelerometerData;
         this.activityRecogData = parser.activityRecogData;
+        this.exitsOnFoot = exitsOnFoot();
+        Log.i("Exits on Foot", Boolean.toString(exitsOnFoot));
     }
 
     public int numberOfStops() {
@@ -42,6 +47,23 @@ public class ParkingAnalyzer {
             }
         }
         return locationData.get(nearestDate);
+    }
+
+    public boolean exitsOnFoot() {
+        //Get last three activity recognition.
+        int walkingThreshold = 50;
+        List keyList = new ArrayList<Date>(activityRecogData.keySet());
+        Log.i("Length",Integer.toString(keyList.toArray().length));
+        //If last three activity recognition don't have on foot > 50,
+        for (int i=1; i < 4; i++) {
+            if (activityRecogData.get(keyList.toArray()[keyList.size()-i]).walking > 50
+                    && activityRecogData.get(keyList.toArray()[keyList.size()-i]).vehicle < 40){
+                return true;
+            }
+            //Log.i("ARRAYACTIVITYCONTENTS",Integer.toString(activityRecogData.get(keyList.toArray()[keyList.size()-i]).vehicle));
+        }
+
+        return false;
     }
 
     public Date findParkedTimestamp() {
