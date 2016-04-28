@@ -70,7 +70,7 @@ public final class Constants {
         // 206 College
         PARKING_LOTS.put("206 College", new LatLng(42.4443992, -76.4823802));
         PARKING_LOTS_POI.put("206 College", new LatLng(42.4443992, -76.4823802));
-        PARKING_LOTS_LOOPS.put("206 College", new LatLng(41.060237,  -73.837281));
+        PARKING_LOTS_LOOPS.put("206 College", new LatLng(42.445321, -76.483498));
 
         // Duffield.
         PARKING_LOTS.put("Duffield", new LatLng(42.4399834, -76.4851814));

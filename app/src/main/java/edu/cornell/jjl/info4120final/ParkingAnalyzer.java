@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ParkingAnalyzer {
-
+    String parkingLot = "206 College";
     ParkingParser parser;
     protected LinkedHashMap<Date, LatLng> locationData = new LinkedHashMap<Date, LatLng>();
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
@@ -106,6 +106,8 @@ public class ParkingAnalyzer {
 
     public int numberOfLoops() {
         int loops = 0;
+        double thresholdClose = 5;
+        double thresholdFar = 5;
         boolean entered = false;
         boolean far = false;
         for (Map.Entry<Date, LatLng> entry : locationData.entrySet()) {
@@ -113,26 +115,26 @@ public class ParkingAnalyzer {
             LatLng value = entry.getValue();
 
             //Starts checking. It has passed the loop / entered
-            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) < 5) {
+            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value) < thresholdClose) {
                 entered = true;
             }
 
             if (entered) {
                 //If entered, make sure far enough away.
-                if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) > 5) {
+                if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value) > thresholdFar) {
                     far = true;
                 }
             }
             //Close again. Must have been a loop. Add one. Reset.
-            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value) < 5 && far) {
+            if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value) < thresholdClose && far) {
                 loops++;
                 entered = false;
                 far = false;
             }
-
-            Log.i("DISTANCE FROM", Double.toString(distFromPOI(Constants.PARKING_LOTS_LOOPS.get("206 College"),value)));
+            Log.i("DISTANCE FROM", Double.toString(distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value)));
             //Log.i("ARRAY CONTENTS:",value.toString());
          }
+        Log.i("Loops Number",Integer.toString(loops));
     return loops;
     }
 }
