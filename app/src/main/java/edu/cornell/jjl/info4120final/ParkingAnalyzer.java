@@ -19,6 +19,7 @@ public class ParkingAnalyzer {
     protected int numberOfLoops;
     protected double distanceFromPOI;
     protected long timeInLot;
+    protected int numberOfStops;
 
     protected LinkedHashMap<Date, LatLng> locationData = new LinkedHashMap<Date, LatLng>();
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
@@ -42,10 +43,28 @@ public class ParkingAnalyzer {
         Log.i("Variables", Integer.toString(numberOfLoops));
         Log.i("Variables", Double.toString(distanceFromPOI));
         Log.i("Variables", Long.toString(timeInLot));
-
     }
 
     public int numberOfStops() {
+
+        for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
+            Date key = entry.getKey();
+            Accel value = entry.getValue();
+            //Magnitude
+            findMagnitude(value.x, value.y, value.z,);
+
+
+        }
+
+
+
+
+        return 0;
+    }
+
+
+    public double findMagnitude(float x, float y, float z) {
+
         return 0;
     }
 
@@ -192,15 +211,40 @@ public class ParkingAnalyzer {
 
                 //Distance Close
                 if (distanceFromPOI > thresholdPOIClose) {
+                    if (numberOfStops == 0) {
+                        //yellow
+                        return 30;
+                    }
+
+                    else if (numberOfStops > 1) {
+                        return 70;
+                    }
+
                 }
 
                 //Distance Far
                 else {
                 }
-
             }
+            //# of Loops is equal to 1.
+            else if (numberOfLoops ==1 ) {
+                //Distance Close
+                if (distanceFromPOI > thresholdPOIClose) {
+                    //yellow
+                    return 30;
+                }
 
-
+                //Distance Far
+                else {
+                    //yellow
+                    return 30;
+                }
+            }
+            //# of Loops is greater than one.
+            else if (numberOfLoops > 1) {
+                //red
+                return 0;
+            }
 
         }
 

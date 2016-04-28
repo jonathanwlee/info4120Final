@@ -60,14 +60,14 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 0;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 4000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
      * than this value.
      */
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS ;
+            UPDATE_INTERVAL_IN_MILLISECONDS /2;
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -665,7 +665,7 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("geo",intent.getStringExtra("Key"));
+            Log.i("Geo",intent.getStringExtra("Key"));
             SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
             if (intent.getStringExtra("Key") =="Enter") {
                 Log.i("geo","Entered If");
