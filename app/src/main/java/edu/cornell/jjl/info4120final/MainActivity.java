@@ -21,6 +21,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -111,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements
     protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
     protected DetectedActivitiesAdapter mAdapter;
 
+    protected Button startButton;
+    protected Button stopButton;
     /**
      * The DetectedActivities that we track in this sample. We use this for initializing the
      * {@code DetectedActivitiesAdapter}. We also use this for persisting state in
@@ -151,6 +155,9 @@ public class MainActivity extends AppCompatActivity implements
 
         // Get the UI widgets.
         mDetectedActivitiesListView = (ListView) findViewById(R.id.detected_activities_listview);
+        startButton = (Button) findViewById(R.id.startButton);
+        stopButton = (Button) findViewById(R.id.stopButton);
+
 
         //Geofences Init
         mGeofenceList = new ArrayList<Geofence>();
@@ -247,6 +254,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    public void startClick(View view) {
+        //mRequestingUpdates = true;
+        mSharedPreferences.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
+        startButton.setEnabled(false);
+        stopButton.setEnabled(true);
+    }
+
+    public void stopClick(View view) {
+       // mRequestingUpdates = false;
+        mSharedPreferences.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
+        startButton.setEnabled(true);
+        stopButton.setEnabled(false);
+    }
+
     private void logSecurityException(SecurityException securityException) {
         Log.e(TAG, "Invalid location permission. " +
                 "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
@@ -322,12 +343,17 @@ public class MainActivity extends AppCompatActivity implements
         final Runnable r = new Runnable() {
             public void run() {
                 if (mGoogleApiClient.isConnected()) {
+
+
                     //If the same
                     if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {
                     } else {
                         mRequestingUpdates = mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false);
+                        Log.i("mRequestingUpdates",Boolean.toString(mRequestingUpdates));
+                        Log.i("mRequestingeShared",Boolean.toString(mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)));
 
                         if (mRequestingUpdates) {
+                            Log.i("Requesting","Entered");
                             startLocationUpdates();
                             mAccelLogger = new DataLogger("accel");
                             mLocationLogger = new DataLogger("location");
@@ -513,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements
 */
 
             if (mRequestingUpdates && mGoogleApiClient.isConnected()) {
-                //mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
+                mLocationLogger.logLocation(Double.toString(mCurrentLocation.getLatitude()), Double.toString(mCurrentLocation.getLongitude()));
             }
         }
     }
@@ -686,10 +712,8 @@ public class MainActivity extends AppCompatActivity implements
             SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
             if (intent.getStringExtra("Key").contains("Entered:"))
             {
-                Log.i("GEO","entered");
-               // Log.i("GEO", Boolean.toString(sharedPrefs.getBoolean(REQUESTING_LOCATION_UPDATES_KEY,false)));
                 //Start Requesting Updates.
-                sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
+                //sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
 
                 //Determine Current Parking Lot
                 sharedPrefs.edit().putString(CURRENT_PARKING_LOT_KEY,intent.getStringExtra("Key").split(" ")[1]).commit();
@@ -698,7 +722,7 @@ public class MainActivity extends AppCompatActivity implements
             {
                 //On exit, no current parking lot and no updates.
                 sharedPrefs.edit().putString(CURRENT_PARKING_LOT_KEY,"none").commit();
-                sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
+                //sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
             }
         }
     }
