@@ -210,9 +210,8 @@ public class MainActivity extends AppCompatActivity implements
         buildGoogleApiClient();
 
         //Testing
-        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
-        parkingAnalyzer.numberOfLoops();
-        Log.i("TimeInLot:", Long.toString(parkingAnalyzer.timeInLot()));
+        //ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
+        //Log.i("TimeInLot:", Long.toString(parkingAnalyzer.timeInLot()));
 
         //LatLng loc = new LatLng(42.445400,-76.483871);
         //Log.i("DISTANCE FOR METERS: " , Double.toString(parkingAnalyzer.distFromPOI(loc,Constants.PARKING_LOTS.get("Sage Hall"))));
@@ -343,8 +342,6 @@ public class MainActivity extends AppCompatActivity implements
         final Runnable r = new Runnable() {
             public void run() {
                 if (mGoogleApiClient.isConnected()) {
-
-
                     //If the same
                     if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {
                     } else {
@@ -362,7 +359,6 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     }
                 }
-
                 handler.postDelayed(this, 1000);
             }
         };
@@ -708,11 +704,11 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         @Override
-        public void onReceive(Context context, Intent intent) {
-            SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
-            if (intent.getStringExtra("Key").contains("Entered:"))
-            {
-                //Start Requesting Updates.
+                public void onReceive(Context context, Intent intent) {
+                SharedPreferences sharedPrefs =    context.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,Context.MODE_PRIVATE);
+                if (intent.getStringExtra("Key").contains("Entered:"))
+                {
+                    //Start Requesting Updates.
                 //sharedPrefs.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
 
                 //Determine Current Parking Lot
