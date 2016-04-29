@@ -75,10 +75,10 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
 
         // Duffield.
-        PARKING_LOTS.put("College", new LatLng(42.447753, -76.485285));
-        PARKING_LOTS_POI.put("College", new LatLng(42.4399834, -76.4851814));
-        PARKING_LOTS_LOOPS.put("College", new LatLng(42.4443992, -76.4823802));
-        PARKING_LOTS_ENTRANCE.put("College", new LatLng(42.445321, -76.483498));
+        PARKING_LOTS.put("WSH", new LatLng(42.446450, -76.486055));
+        PARKING_LOTS_POI.put("WSH", new LatLng(42.446550, -76.485892));
+        PARKING_LOTS_LOOPS.put("WSH", new LatLng(42.446305, -76.486038));
+        PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
 
     }
 
