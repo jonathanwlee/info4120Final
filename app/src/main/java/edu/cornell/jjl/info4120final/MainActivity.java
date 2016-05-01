@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements
         buildGoogleApiClient();
 
         //Testing
-        //ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-23_17-47-05");
+        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-30_18-18-45");
         //Log.i("TimeInLot:", Long.toString(parkingAnalyzer.timeInLot()));
 
         //LatLng loc = new LatLng(42.445400,-76.483871);

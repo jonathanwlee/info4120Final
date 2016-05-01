@@ -6,7 +6,9 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Deque;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,11 +40,13 @@ public class ParkingAnalyzer {
         this.numberOfLoops = numberOfLoops();
         this.distanceFromPOI = distFromPOI(findParkingLocation(),Constants.PARKING_LOTS_POI.get(parkingLot));
         this.timeInLot = timeInLot();
+        this.numberOfStops = numberOfStops();
 
         Log.i("Variables", Boolean.toString(exitsOnFoot));
         Log.i("Variables", Integer.toString(numberOfLoops));
         Log.i("Variables", Double.toString(distanceFromPOI));
         Log.i("Variables", Long.toString(timeInLot));
+        Log.i("Variables", Integer.toString(numberOfStops));
     }
 
     public int numberOfStops() {
@@ -52,11 +56,62 @@ public class ParkingAnalyzer {
             //Magnitude
         }
 
-        return 0;
+        int stops = 0;
+        double gravity = 9.8;
+        double accelerationThreshold = 1.5;
+        boolean wasMoving = false;
+        boolean isMoving = false;
+
+        Deque<Double> last100 = new LinkedList<Double>();
+
+        for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
+            Date key = entry.getKey();
+            Accel value = entry.getValue();
+            //Magnitude
+            double magnitude = Math.abs(findMagnitude(value.x, value.y, value.z) - gravity);
+            //System.out.println(magnitude);
+            last100.addLast(magnitude);
+            if (last100.size() < 100) {
+                continue;
+            }
+
+            double averageMagnitude = average(last100);
+            if (averageMagnitude < accelerationThreshold) {
+                //System.out.println(magnitude);
+                if (isMoving) {
+                    wasMoving = true;
+                    isMoving = false;
+                }
+            }
+            else {
+                if (!isMoving) {
+                    if (wasMoving) {
+                        stops++;
+                        //System.out.println("---------------------------------");
+                        //for (Map.Entry<Date, Double> reading : queue.entrySet()) {
+                        //    System.out.println(reading);
+                        //}
+                    }
+                    wasMoving = false;
+                    isMoving = true;
+                }
+            }
+            last100.removeFirst();
+        }
+
+        return stops;
+    }
+
+    private double average(Deque<Double> magnitudes) {
+        double sum = 0.0;
+        for (Double x : magnitudes) {
+            sum += x;
+        }
+        return sum / magnitudes.size();
     }
 
     public double findMagnitude(float x, float y, float z) {
-        return 0;
+        return Math.sqrt(x*x + y*y + z*z);
     }
 
     public LatLng findParkingLocation() {
@@ -113,7 +168,6 @@ public class ParkingAnalyzer {
                 }
             }
         }
-        Log.i("DATE RETURNED: ", parkingTimestamp.toString());
         return parkingTimestamp;
     }
 

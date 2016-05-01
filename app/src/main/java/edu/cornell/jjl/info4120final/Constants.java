@@ -68,18 +68,17 @@ public final class Constants {
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_LOOPS = new LinkedHashMap<String,LatLng>();
 
     static {
-        // 206 College
+        // Sage Hall
         PARKING_LOTS.put("Sage", new LatLng(42.4451613, -76.484061));
         PARKING_LOTS_POI.put("Sage", new LatLng(42.445544, -76.483390));
         PARKING_LOTS_LOOPS.put("Sage", new LatLng(42.445321, -76.483498));
         PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
 
-        // Duffield.
+        // WSH.
         PARKING_LOTS.put("WSH", new LatLng(42.446450, -76.486055));
         PARKING_LOTS_POI.put("WSH", new LatLng(42.446550, -76.485892));
         PARKING_LOTS_LOOPS.put("WSH", new LatLng(42.446305, -76.486038));
         PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
-
     }
 
     /**
