@@ -66,6 +66,9 @@ public final class Constants {
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_ENTRANCE = new LinkedHashMap<String,LatLng>();
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_POI = new LinkedHashMap<String,LatLng>();
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_LOOPS = new LinkedHashMap<String,LatLng>();
+    public static final LinkedHashMap<String, String> PARKING_LOTS_SPACES = new LinkedHashMap<String,String>();
+    public static final LinkedHashMap<String, String> PARKING_LOTS_STATUS = new LinkedHashMap<String,String>();
+
 
     static {
         // Sage Hall
@@ -73,12 +76,17 @@ public final class Constants {
         PARKING_LOTS_POI.put("Sage", new LatLng(42.445544, -76.483390));
         PARKING_LOTS_LOOPS.put("Sage", new LatLng(42.445321, -76.483498));
         PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
+        PARKING_LOTS_SPACES.put("Sage","40");
+        PARKING_LOTS_STATUS.put("Sage","Green");
+
 
         // WSH.
         PARKING_LOTS.put("WSH", new LatLng(42.446450, -76.486055));
         PARKING_LOTS_POI.put("WSH", new LatLng(42.446550, -76.485892));
         PARKING_LOTS_LOOPS.put("WSH", new LatLng(42.446305, -76.486038));
         PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
+        PARKING_LOTS_SPACES.put("WSH","40");
+        PARKING_LOTS_STATUS.put("WSH","Green");
     }
 
     /**
@@ -87,7 +95,7 @@ public final class Constants {
      * fastest possible rate. Getting frequent updates negatively impact battery life and a real
      * app may prefer to request less frequent updates.
      */
-    public static final long DETECTION_INTERVAL_IN_MILLISECONDS = 500;
+    public static final long DETECTION_INTERVAL_IN_MILLISECONDS = 0;
 
     /**
      * List of DetectedActivity types that we monitor in this sample.

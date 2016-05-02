@@ -42,11 +42,11 @@ public class ParkingAnalyzer {
         this.timeInLot = timeInLot();
         this.numberOfStops = numberOfStops();
 
-        Log.i("Variables", Boolean.toString(exitsOnFoot));
-        Log.i("Variables", Integer.toString(numberOfLoops));
-        Log.i("Variables", Double.toString(distanceFromPOI));
-        Log.i("Variables", Long.toString(timeInLot));
-        Log.i("Variables", Integer.toString(numberOfStops));
+        Log.i("VariablesOnFoot", Boolean.toString(exitsOnFoot));
+        Log.i("VariablesLoops", Integer.toString(numberOfLoops));
+        Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
+        //Log.i("VariablesTimeInLot", Long.toString(timeInLot));
+        Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
     }
 
     public int numberOfStops() {
@@ -125,23 +125,22 @@ public class ParkingAnalyzer {
                 nearestDate = date;
             }
         }
+        Log.i("VariableLocation",locationData.get(nearestDate).toString());
         return locationData.get(nearestDate);
     }
 
     public boolean exitsOnFoot() {
-        //Get last three activity recognition.
+        //Get last two activity recognition.
         int walkingThreshold = 50;
         List keyList = new ArrayList<Date>(activityRecogData.keySet());
         Log.i("Length",Integer.toString(keyList.toArray().length));
-        //If last three activity recognition don't have on foot > 50,
-        for (int i=1; i < 4; i++) {
+        //If last two activity recognition don't have on foot > 50,
+        for (int i=1; i < 3; i++) {
             if (activityRecogData.get(keyList.toArray()[keyList.size()-i]).walking > 50
                     && activityRecogData.get(keyList.toArray()[keyList.size()-i]).vehicle < 40){
                 return true;
             }
-            //Log.i("ARRAYACTIVITYCONTENTS",Integer.toString(activityRecogData.get(keyList.toArray()[keyList.size()-i]).vehicle));
         }
-
         return false;
     }
 
@@ -150,19 +149,18 @@ public class ParkingAnalyzer {
 
         List keyList = new ArrayList<Date>(activityRecogData.keySet());
         for (int i = 1; i < keyList.size(); i++) {
-            //Log.i("ARRAY CONTENTS: ", keyList.toArray()[i].toString());
         }
 
         for (Map.Entry<Date, ActivityRecog> entry : activityRecogData.entrySet()) {
             Date key = entry.getKey();
             ActivityRecog value = entry.getValue();
 
-            if (value.walking > 60) {
+            if (value.walking > 50) {
                 int walkingIndex = keyList.indexOf(key);
                 Log.i("WALKING INDEX: ", Integer.toString(walkingIndex));
                 for (int i = walkingIndex - 1; i >= 0; i--) {
                     ActivityRecog valueBeforeWalking = activityRecogData.get(keyList.toArray()[i]);
-                    if (valueBeforeWalking.still > 60) {
+                    if (valueBeforeWalking.still > 50) {
                         parkingTimestamp = (Date) keyList.toArray()[i];
                     }
                 }
@@ -178,7 +176,7 @@ public class ParkingAnalyzer {
     public long timeInLot() {
         Set<Date> keyset = accelerometerData.keySet();
         Date start = new Date(Long.MAX_VALUE);
-        Date end = new Date(Long.MIN_VALUE);
+        Date end;
 
         //Find Earliest Time
         for (int i = 0; i < keyset.size() - 1; i++) {
