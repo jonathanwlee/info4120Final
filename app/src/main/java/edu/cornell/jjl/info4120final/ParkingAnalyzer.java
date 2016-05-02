@@ -5,6 +5,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -38,14 +39,13 @@ public class ParkingAnalyzer {
     public void init() {
         this.exitsOnFoot = exitsOnFoot();
         this.numberOfLoops = numberOfLoops();
-        this.distanceFromPOI = distFromPOI(findParkingLocation(),Constants.PARKING_LOTS_POI.get(parkingLot));
+        this.distanceFromPOI = distFromPOI(Constants.PARKING_LOTS_POI.get(parkingLot),findParkingLocation());
         this.timeInLot = timeInLot();
         this.numberOfStops = numberOfStops();
 
         Log.i("VariablesOnFoot", Boolean.toString(exitsOnFoot));
         Log.i("VariablesLoops", Integer.toString(numberOfLoops));
         Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
-        //Log.i("VariablesTimeInLot", Long.toString(timeInLot));
         Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
     }
 
@@ -115,6 +115,10 @@ public class ParkingAnalyzer {
     }
 
     public LatLng findParkingLocation() {
+        //If never parked, return Preset 0,0 LatLng
+        if (findParkedTimestamp().equals(new Date(Long.MIN_VALUE))) {
+            return new LatLng(0,0);
+        }
         long minDiff = -1, stillTimestamp = findParkedTimestamp().getTime();
         Date nearestDate = null;
 
@@ -125,7 +129,7 @@ public class ParkingAnalyzer {
                 nearestDate = date;
             }
         }
-        Log.i("VariableLocation",locationData.get(nearestDate).toString());
+        Log.i("VariableParkingLocation",locationData.get(nearestDate).toString());
         return locationData.get(nearestDate);
     }
 
@@ -146,26 +150,51 @@ public class ParkingAnalyzer {
 
     public Date findParkedTimestamp() {
         Date parkingTimestamp = new Date(Long.MIN_VALUE);
+        boolean foundIndex = false;
 
         List keyList = new ArrayList<Date>(activityRecogData.keySet());
         for (int i = 1; i < keyList.size(); i++) {
         }
 
         for (Map.Entry<Date, ActivityRecog> entry : activityRecogData.entrySet()) {
+            int walkingIndex;
             Date key = entry.getKey();
             ActivityRecog value = entry.getValue();
 
-            if (value.walking > 50) {
-                int walkingIndex = keyList.indexOf(key);
-                Log.i("WALKING INDEX: ", Integer.toString(walkingIndex));
-                for (int i = walkingIndex - 1; i >= 0; i--) {
-                    ActivityRecog valueBeforeWalking = activityRecogData.get(keyList.toArray()[i]);
-                    if (valueBeforeWalking.still > 50) {
-                        parkingTimestamp = (Date) keyList.toArray()[i];
+            if (!foundIndex ) {
+                if (value.walking > 20) {
+                    walkingIndex = keyList.indexOf(key);
+                    foundIndex = true;
+
+                    for (int i = walkingIndex - 1; i >= 0; i--) {
+                        ActivityRecog valueBeforeWalking = activityRecogData.get(keyList.toArray()[i]);
+
+                        if (valueBeforeWalking.vehicle < 40) {
+                            parkingTimestamp = (Date) keyList.toArray()[i];
+                        }
+                    }
+
+                    //If not long enough to be still
+                    if (parkingTimestamp.equals(new Date(Long.MIN_VALUE))) {
+                        parkingTimestamp = (Date) keyList.toArray()[walkingIndex-1];
+
+                        if (((((Date) keyList.toArray()[walkingIndex]).getTime()
+                                - parkingTimestamp.getTime()) / DateUtils.SECOND_IN_MILLIS) > 15) {
+
+                            long average = ((((Date) keyList.toArray()[walkingIndex]).getTime()
+                                    - parkingTimestamp.getTime()) / 2 );
+                            Log.i("average",Long.toString(average));
+
+                            Calendar cal = Calendar.getInstance();
+                            cal.setTime(((Date) keyList.toArray()[walkingIndex-1]));
+                            cal.add(Calendar.MILLISECOND, ((int) average));
+                            parkingTimestamp = cal.getTime();
+                        }
                     }
                 }
             }
         }
+        Log.i("ParkingTimestamp",parkingTimestamp.toString());
         return parkingTimestamp;
     }
 
@@ -199,13 +228,18 @@ public class ParkingAnalyzer {
         locParking.setLatitude(latlng2.latitude);
         locParking.setLongitude(latlng2.longitude);
 
+        //If never parked. Return MAX VALUE
+        if (locParking.getLatitude() ==0 && locParking.getLongitude() ==0) {
+            return Double.MAX_VALUE;
+        }
+
         return locPOI.distanceTo(locParking);
     }
 
     public int numberOfLoops() {
         int loops = 0;
-        double thresholdClose = 5;
-        double thresholdFar = 5;
+        double thresholdClose = 10;
+        double thresholdFar = 10;
         boolean entered = false;
         boolean far = false;
         for (Map.Entry<Date, LatLng> entry : locationData.entrySet()) {
@@ -225,15 +259,16 @@ public class ParkingAnalyzer {
             }
             //Close again. Must have been a loop. Add one. Reset.
             if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value) < thresholdClose && far) {
-                loops++;
+                if(key.before(findParkedTimestamp())) {
+                    loops++;
+                }
+
                 entered = false;
                 far = false;
             }
             Log.i("DISTANCE FROM", Double.toString(distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value)));
-            //Log.i("ARRAY CONTENTS:",value.toString());
          }
-        Log.i("Loops Number",Integer.toString(loops));
-    return loops;
+        return loops;
     }
 
 

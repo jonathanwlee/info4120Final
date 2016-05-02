@@ -87,6 +87,14 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
         PARKING_LOTS_SPACES.put("WSH","40");
         PARKING_LOTS_STATUS.put("WSH","Green");
+
+        // Engineering.
+        PARKING_LOTS.put("Engineering", new LatLng(42.443602, -76.483565));
+        PARKING_LOTS_POI.put("Engineering", new LatLng(42.443818, -76.483644));
+        PARKING_LOTS_LOOPS.put("Engineering", new LatLng(42.443595, -76.483870));
+        PARKING_LOTS_ENTRANCE.put("Engineering", new LatLng(42.443510, -76.484163));
+        PARKING_LOTS_SPACES.put("Engineering","40");
+        PARKING_LOTS_STATUS.put("Engineering","Green");
     }
 
     /**

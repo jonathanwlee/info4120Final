@@ -32,6 +32,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-30_18-25-30");
+
     }
 
     /**
@@ -93,14 +95,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void populateMarkers() {
-
         for (Map.Entry<String, LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
             String content = "Number of Spaces: " + Constants.PARKING_LOTS_SPACES.get(entry.getKey()) + "\n" +
                     "Status: " + Constants.PARKING_LOTS_STATUS.get(entry.getKey()) + "\n";
             mMap.addMarker(new MarkerOptions().position(entry.getValue()).title(entry.getKey()).snippet(content));
         }
-
-
 
     }
 }
