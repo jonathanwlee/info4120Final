@@ -4,6 +4,10 @@ import android.location.Location;
 import android.text.format.DateUtils;
 import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ParkingAnalyzer {
-    String parkingLot = "Sage";
+    String parkingLot = "";
     ParkingParser parser;
 
     protected boolean exitsOnFoot;
@@ -23,6 +27,7 @@ public class ParkingAnalyzer {
     protected double distanceFromPOI;
     protected long timeInLot;
     protected int numberOfStops;
+    protected boolean most_recent = true;
 
     protected LinkedHashMap<Date, LatLng> locationData = new LinkedHashMap<Date, LatLng>();
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
@@ -34,19 +39,80 @@ public class ParkingAnalyzer {
         this.accelerometerData = parser.accelerometerData;
         this.activityRecogData = parser.activityRecogData;
         init();
+        lastUpdateTime(date);
+
     }
 
     public void init() {
+        this.parkingLot = findParkingLot();
         this.exitsOnFoot = exitsOnFoot();
         this.numberOfLoops = numberOfLoops();
         this.distanceFromPOI = distFromPOI(Constants.PARKING_LOTS_POI.get(parkingLot),findParkingLocation());
         this.timeInLot = timeInLot();
         this.numberOfStops = numberOfStops();
 
+        if (most_recent) {
+        //Do!
+        }
+
+        Log.i("VariablesParkingLot",parkingLot);
         Log.i("VariablesOnFoot", Boolean.toString(exitsOnFoot));
         Log.i("VariablesLoops", Integer.toString(numberOfLoops));
         Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
         Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
+    }
+
+    public void lastUpdateTime(String date) {
+        Date updatedDate;
+        Date currentDate;
+        String[] split_date = date.split("_");
+
+        String[] split_year = split_date[1].split("-");
+        String string_date = split_year[1] + "-" + split_year[2] + "_" + split_date[2];
+
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd_HH-mm-ss");
+        try {
+            updatedDate = formatter.parse(string_date);
+
+            try {
+                currentDate = formatter.parse(Constants.PARKING_LOTS_LAST_UPDATE.get(parkingLot));
+                Log.i("VariableDateCurrrent",currentDate.toString());
+
+            }
+
+            catch (ParseException e){
+                currentDate = new Date(Long.MIN_VALUE);
+                Log.i("VariableDateCatch",currentDate.toString());
+
+            }
+            if (updatedDate.after(currentDate)) {
+                String[] split_update_date = updatedDate.toString().split("EDT");
+                Constants.PARKING_LOTS_LAST_UPDATE.put(parkingLot,split_update_date[0]);
+                Log.i("VariableDate",updatedDate.toString());
+                most_recent = true;
+            }
+            else {
+                most_recent = false;
+            }
+
+        }
+        catch (ParseException e) {
+            Log.i("VariableDateBroken",e.toString());
+        }
+
+    }
+    /**
+     * returns string name of parking lot.
+     */
+    public String findParkingLot() {
+        LatLng firstLocation = locationData.get(locationData.keySet().toArray()[0]);
+        for (Map.Entry<String,LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
+            if (distFromPOI(firstLocation,entry.getValue()) < 150) {
+                return entry.getKey();
+            }
+        }
+
+        return "Sage";
     }
 
     public int numberOfStops() {
@@ -153,8 +219,6 @@ public class ParkingAnalyzer {
         boolean foundIndex = false;
 
         List keyList = new ArrayList<Date>(activityRecogData.keySet());
-        for (int i = 1; i < keyList.size(); i++) {
-        }
 
         for (Map.Entry<Date, ActivityRecog> entry : activityRecogData.entrySet()) {
             int walkingIndex;
@@ -181,9 +245,9 @@ public class ParkingAnalyzer {
                         if (((((Date) keyList.toArray()[walkingIndex]).getTime()
                                 - parkingTimestamp.getTime()) / DateUtils.SECOND_IN_MILLIS) > 15) {
 
+                            //Add up averages
                             long average = ((((Date) keyList.toArray()[walkingIndex]).getTime()
                                     - parkingTimestamp.getTime()) / 2 );
-                            Log.i("average",Long.toString(average));
 
                             Calendar cal = Calendar.getInstance();
                             cal.setTime(((Date) keyList.toArray()[walkingIndex-1]));
@@ -273,7 +337,7 @@ public class ParkingAnalyzer {
 
 
     /**
-    Implements Rule tree for determining parking availability.
+    Implements decision tree for determining parking availability.
      */
     public int determineParkingAvailability() {
 

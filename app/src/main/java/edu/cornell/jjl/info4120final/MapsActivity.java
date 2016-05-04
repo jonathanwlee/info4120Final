@@ -1,10 +1,13 @@
 package edu.cornell.jjl.info4120final;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -14,10 +17,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
 import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -32,8 +37,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-30_18-25-30");
-
     }
 
     /**
@@ -48,6 +51,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-30_18-29-16");
+        createParkingParsers();
+
         populateMarkers();
 
         LatLng center = new LatLng(42.447175, -76.483152);
@@ -94,11 +100,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    public void createParkingParsers() {
+        File sdCardRoot = Environment.getExternalStorageDirectory();
+        File yourDir = new File(sdCardRoot, "info4120data");
+        for (File f : yourDir.listFiles()) {
+            String[] file_name_split = f.getName().split("_");
+            String file_name = file_name_split[0] + "_" + file_name_split[1] + "_" + file_name_split[2];
+            ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer(file_name);
+        }
+    }
+
     public void populateMarkers() {
         for (Map.Entry<String, LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
-            String content = "Number of Spaces: " + Constants.PARKING_LOTS_SPACES.get(entry.getKey()) + "\n" +
-                    "Status: " + Constants.PARKING_LOTS_STATUS.get(entry.getKey()) + "\n";
-            mMap.addMarker(new MarkerOptions().position(entry.getValue()).title(entry.getKey()).snippet(content));
+            String title = "";
+            float marker_color = BitmapDescriptorFactory.HUE_RED;
+            if (entry.getKey() == "Sage") { title = "Sage Hall Parking Lot";}
+            else if (entry.getKey() == "WSH") {title = "Willard Straight Hall Parking Lot";}
+            else if (entry.getKey() == "Upson") { title = "Upson Hall Parking Lot"; }
+
+            String status = Constants.PARKING_LOTS_STATUS.get(entry.getKey());
+
+            if (status =="Green") { marker_color = BitmapDescriptorFactory.HUE_GREEN;}
+            else if (status =="Yellow") {marker_color = BitmapDescriptorFactory.HUE_YELLOW; }
+            else if (status == "Red") {marker_color = BitmapDescriptorFactory.HUE_RED;}
+
+            String content = "Total Number of Spaces: " + Constants.PARKING_LOTS_SPACES.get(entry.getKey()) + "\n" +
+                    "Status: " + Constants.PARKING_LOTS_STATUS.get(entry.getKey()) + "\n" + "Last Updated: " +
+                    Constants.PARKING_LOTS_LAST_UPDATE.get(entry.getKey());
+            mMap.addMarker(new MarkerOptions().position(entry.getValue()).title(title).snippet(content)
+                    .icon(BitmapDescriptorFactory.defaultMarker(marker_color)));
         }
 
     }

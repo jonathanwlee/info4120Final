@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
     /**
-     * Provides the entry point to Google Play services.
-     */
+    * Provides the entry point to Google Play services.
+            */
     protected GoogleApiClient mGoogleApiClient;
 
     /**
