@@ -79,7 +79,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
         PARKING_LOTS_SPACES.put("Sage","40");
         PARKING_LOTS_STATUS.put("Sage","Green");
-        PARKING_LOTS_LAST_UPDATE.put("Sage","");
+        PARKING_LOTS_LAST_UPDATE.put("Sage","N/A");
 
 
         // WSH.
@@ -89,7 +89,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
         PARKING_LOTS_SPACES.put("WSH","40");
         PARKING_LOTS_STATUS.put("WSH","Yellow");
-        PARKING_LOTS_LAST_UPDATE.put("WSH","");
+        PARKING_LOTS_LAST_UPDATE.put("WSH","N/A");
 
 
         // Engineering.
@@ -99,7 +99,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Upson", new LatLng(42.443510, -76.484163));
         PARKING_LOTS_SPACES.put("Upson","40");
         PARKING_LOTS_STATUS.put("Upson","Red");
-        PARKING_LOTS_LAST_UPDATE.put("Upson","");
+        PARKING_LOTS_LAST_UPDATE.put("Upson","N/A");
 
         // Bartels.
         PARKING_LOTS.put("Bartels", new LatLng(42.444716, -76.476646));
@@ -108,7 +108,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Bartels", new LatLng(42.445170, -76.475821));
         PARKING_LOTS_SPACES.put("Bartels","100");
         PARKING_LOTS_STATUS.put("Bartels","Green");
-        PARKING_LOTS_LAST_UPDATE.put("Bartels","");
+        PARKING_LOTS_LAST_UPDATE.put("Bartels","N/A");
 
         // Vet.
         PARKING_LOTS.put("Veterinary", new LatLng(42.445732, -76.468948));
@@ -117,7 +117,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Veterinary", new LatLng(42.445939, -76.469592));
         PARKING_LOTS_SPACES.put("Veterinary","100");
         PARKING_LOTS_STATUS.put("Veterinary","Green");
-        PARKING_LOTS_LAST_UPDATE.put("Veterinary","");
+        PARKING_LOTS_LAST_UPDATE.put("Veterinary","N/A");
 
         // Kite.
         PARKING_LOTS.put("Kite", new LatLng(42.445435, -76.473621));
@@ -126,7 +126,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Kite", new LatLng(42.445245, -76.474172));
         PARKING_LOTS_SPACES.put("Kite","100");
         PARKING_LOTS_STATUS.put("Kite","Green");
-        PARKING_LOTS_LAST_UPDATE.put("Kite","");
+        PARKING_LOTS_LAST_UPDATE.put("Kite","N/A");
 
         // Law.
         PARKING_LOTS.put("Law", new LatLng(42.444360, -76.486353));
@@ -135,7 +135,7 @@ public final class Constants {
         PARKING_LOTS_ENTRANCE.put("Law", new LatLng(42.444360, -76.486353));
         PARKING_LOTS_SPACES.put("Law","100");
         PARKING_LOTS_STATUS.put("Law","Green");
-        PARKING_LOTS_LAST_UPDATE.put("Law","");
+        PARKING_LOTS_LAST_UPDATE.put("Law","N/A");
 
     }
 

@@ -51,7 +51,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer("log_2016-04-30_18-29-16");
         createParkingParsers();
 
         populateMarkers();
@@ -117,6 +116,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (entry.getKey() == "Sage") { title = "Sage Hall Parking Lot";}
             else if (entry.getKey() == "WSH") {title = "Willard Straight Hall Parking Lot";}
             else if (entry.getKey() == "Upson") { title = "Upson Hall Parking Lot"; }
+            else if (entry.getKey() == "Veterinary") { title = "Veterinary School Parking Lot"; }
+            else if (entry.getKey() == "Kite") { title = "Kite Hill Parking Lot"; }
+            else if (entry.getKey() == "Law") { title = "Law School Parking Lot"; }
+            else if (entry.getKey() == "Bartels") { title = "Bartels Parking Lot"; }
 
             String status = Constants.PARKING_LOTS_STATUS.get(entry.getKey());
 
