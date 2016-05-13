@@ -78,9 +78,8 @@ public final class Constants {
         PARKING_LOTS_LOOPS.put("Sage", new LatLng(42.445321, -76.483498));
         PARKING_LOTS_ENTRANCE.put("Sage", new LatLng(42.445321, -76.483498));
         PARKING_LOTS_SPACES.put("Sage","40");
-        PARKING_LOTS_STATUS.put("Sage","Green");
+        PARKING_LOTS_STATUS.put("Sage","Full");
         PARKING_LOTS_LAST_UPDATE.put("Sage","N/A");
-
 
         // WSH.
         PARKING_LOTS.put("WSH", new LatLng(42.446450, -76.486055));
@@ -88,7 +87,7 @@ public final class Constants {
         PARKING_LOTS_LOOPS.put("WSH", new LatLng(42.446305, -76.486038));
         PARKING_LOTS_ENTRANCE.put("WSH", new LatLng(42.445886, -76.485961));
         PARKING_LOTS_SPACES.put("WSH","40");
-        PARKING_LOTS_STATUS.put("WSH","Yellow");
+        PARKING_LOTS_STATUS.put("WSH","Semi-Empty");
         PARKING_LOTS_LAST_UPDATE.put("WSH","N/A");
 
 
@@ -98,7 +97,7 @@ public final class Constants {
         PARKING_LOTS_LOOPS.put("Upson", new LatLng(42.443595, -76.483870));
         PARKING_LOTS_ENTRANCE.put("Upson", new LatLng(42.443510, -76.484163));
         PARKING_LOTS_SPACES.put("Upson","40");
-        PARKING_LOTS_STATUS.put("Upson","Red");
+        PARKING_LOTS_STATUS.put("Upson","Semi-Full");
         PARKING_LOTS_LAST_UPDATE.put("Upson","N/A");
 
         // Bartels.
@@ -106,8 +105,8 @@ public final class Constants {
         PARKING_LOTS_POI.put("Bartels", new LatLng(42.445142, -76.476630));
         PARKING_LOTS_LOOPS.put("Bartels", new LatLng(42.445142, -76.476630));
         PARKING_LOTS_ENTRANCE.put("Bartels", new LatLng(42.445170, -76.475821));
-        PARKING_LOTS_SPACES.put("Bartels","100");
-        PARKING_LOTS_STATUS.put("Bartels","Green");
+        PARKING_LOTS_SPACES.put("Bartels","60");
+        PARKING_LOTS_STATUS.put("Bartels","Empty");
         PARKING_LOTS_LAST_UPDATE.put("Bartels","N/A");
 
         // Vet.
@@ -115,8 +114,8 @@ public final class Constants {
         PARKING_LOTS_POI.put("Veterinary", new LatLng(42.445939, -76.469457));
         PARKING_LOTS_LOOPS.put("Veterinary", new LatLng(42.445939, -76.469457));
         PARKING_LOTS_ENTRANCE.put("Veterinary", new LatLng(42.445939, -76.469592));
-        PARKING_LOTS_SPACES.put("Veterinary","100");
-        PARKING_LOTS_STATUS.put("Veterinary","Green");
+        PARKING_LOTS_SPACES.put("Veterinary","80");
+        PARKING_LOTS_STATUS.put("Veterinary","Semi-Empty");
         PARKING_LOTS_LAST_UPDATE.put("Veterinary","N/A");
 
         // Kite.
@@ -125,7 +124,7 @@ public final class Constants {
         PARKING_LOTS_LOOPS.put("Kite", new LatLng(42.445413, -76.474245));
         PARKING_LOTS_ENTRANCE.put("Kite", new LatLng(42.445245, -76.474172));
         PARKING_LOTS_SPACES.put("Kite","100");
-        PARKING_LOTS_STATUS.put("Kite","Green");
+        PARKING_LOTS_STATUS.put("Kite","Full");
         PARKING_LOTS_LAST_UPDATE.put("Kite","N/A");
 
         // Law.
@@ -134,9 +133,8 @@ public final class Constants {
         PARKING_LOTS_LOOPS.put("Law", new LatLng(42.444360, -76.486353));
         PARKING_LOTS_ENTRANCE.put("Law", new LatLng(42.444360, -76.486353));
         PARKING_LOTS_SPACES.put("Law","100");
-        PARKING_LOTS_STATUS.put("Law","Green");
+        PARKING_LOTS_STATUS.put("Law","Empty");
         PARKING_LOTS_LAST_UPDATE.put("Law","N/A");
-
     }
 
     /**

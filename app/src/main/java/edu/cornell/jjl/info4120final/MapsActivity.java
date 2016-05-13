@@ -1,13 +1,11 @@
 package edu.cornell.jjl.info4120final;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -123,9 +121,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             String status = Constants.PARKING_LOTS_STATUS.get(entry.getKey());
 
-            if (status =="Green") { marker_color = BitmapDescriptorFactory.HUE_GREEN;}
-            else if (status =="Yellow") {marker_color = BitmapDescriptorFactory.HUE_YELLOW; }
-            else if (status == "Red") {marker_color = BitmapDescriptorFactory.HUE_RED;}
+            if (status =="Empty") { marker_color = BitmapDescriptorFactory.HUE_GREEN;}
+            else if (status =="Semi-Empty") {marker_color = BitmapDescriptorFactory.HUE_YELLOW; }
+            else if (status =="Semi-Full") {marker_color = BitmapDescriptorFactory.HUE_ORANGE; }
+            else if (status == "Full") {marker_color = BitmapDescriptorFactory.HUE_RED;}
 
             String content = "Total Number of Spaces: " + Constants.PARKING_LOTS_SPACES.get(entry.getKey()) + "\n" +
                     "Status: " + Constants.PARKING_LOTS_STATUS.get(entry.getKey()) + "\n" + "Last Updated: " +

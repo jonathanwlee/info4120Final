@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -44,22 +45,21 @@ public class ParkingAnalyzer {
     }
 
     public void init() {
-        this.parkingLot = findParkingLot();
-        this.exitsOnFoot = exitsOnFoot();
-        this.numberOfLoops = numberOfLoops();
-        this.distanceFromPOI = distFromPOI(Constants.PARKING_LOTS_POI.get(parkingLot),findParkingLocation());
-        this.timeInLot = timeInLot();
-        this.numberOfStops = numberOfStops();
-
         if (most_recent) {
-        //Do!
-        }
+            this.parkingLot = findParkingLot();
+            this.exitsOnFoot = exitsOnFoot();
+            this.numberOfLoops = numberOfLoops();
+            this.distanceFromPOI = distFromPOI(Constants.PARKING_LOTS_POI.get(parkingLot),findParkingLocation());
+            this.timeInLot = timeInLot();
+            this.numberOfStops = numberOfStops();
+            determineParkingAvailability();
 
-        Log.i("VariablesParkingLot",parkingLot);
-        Log.i("VariablesOnFoot", Boolean.toString(exitsOnFoot));
-        Log.i("VariablesLoops", Integer.toString(numberOfLoops));
-        Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
-        Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
+            Log.i("VariablesParkingLot",parkingLot);
+            Log.i("VariablesOnFoot", Boolean.toString(exitsOnFoot));
+            Log.i("VariablesLoops", Integer.toString(numberOfLoops));
+            Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
+            Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
+        }
     }
 
     public void lastUpdateTime(String date) {
@@ -76,19 +76,14 @@ public class ParkingAnalyzer {
 
             try {
                 currentDate = formatter.parse(Constants.PARKING_LOTS_LAST_UPDATE.get(parkingLot));
-                Log.i("VariableDateCurrrent",currentDate.toString());
-
             }
 
             catch (ParseException e){
                 currentDate = new Date(Long.MIN_VALUE);
-                Log.i("VariableDateCatch",currentDate.toString());
-
             }
             if (updatedDate.after(currentDate)) {
                 String[] split_update_date = updatedDate.toString().split("EDT");
                 Constants.PARKING_LOTS_LAST_UPDATE.put(parkingLot,split_update_date[0]);
-                Log.i("VariableDate",updatedDate.toString());
                 most_recent = true;
             }
             else {
@@ -97,7 +92,6 @@ public class ParkingAnalyzer {
 
         }
         catch (ParseException e) {
-            Log.i("VariableDateBroken",e.toString());
         }
 
     }
@@ -115,35 +109,46 @@ public class ParkingAnalyzer {
         return "Sage";
     }
 
-    public int numberOfStops() {
-        for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
-            Date key = entry.getKey();
-            Accel value = entry.getValue();
-            //Magnitude
-        }
 
+
+    public int numberOfStops() {
         int stops = 0;
-        double gravity = 9.8;
-        double accelerationThreshold = 1.5;
         boolean wasMoving = false;
         boolean isMoving = false;
 
         Deque<Double> last100 = new LinkedList<Double>();
 
+        List<Double> variances = new ArrayList<Double>();
         for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
             Date key = entry.getKey();
             Accel value = entry.getValue();
             //Magnitude
-            double magnitude = Math.abs(findMagnitude(value.x, value.y, value.z) - gravity);
-            //System.out.println(magnitude);
+            double magnitude = findMagnitude(value.x, value.y, value.z);
             last100.addLast(magnitude);
             if (last100.size() < 100) {
                 continue;
             }
 
-            double averageMagnitude = average(last100);
-            if (averageMagnitude < accelerationThreshold) {
-                //System.out.println(magnitude);
+            double variance = variance(last100);
+            variances.add(variance);
+            last100.removeFirst();
+        }
+
+        double threshold = average(variances);
+
+        last100.clear();
+        for (Map.Entry<Date, Accel> entry : accelerometerData.entrySet()) {
+            Date key = entry.getKey();
+            Accel value = entry.getValue();
+            //Magnitude
+            double magnitude = findMagnitude(value.x, value.y, value.z);
+            last100.addLast(magnitude);
+            if (last100.size() < 100) {
+                continue;
+            }
+
+            double variance = variance(last100);
+            if (variance < threshold) {
                 if (isMoving) {
                     wasMoving = true;
                     isMoving = false;
@@ -153,10 +158,6 @@ public class ParkingAnalyzer {
                 if (!isMoving) {
                     if (wasMoving) {
                         stops++;
-                        //System.out.println("---------------------------------");
-                        //for (Map.Entry<Date, Double> reading : queue.entrySet()) {
-                        //    System.out.println(reading);
-                        //}
                     }
                     wasMoving = false;
                     isMoving = true;
@@ -168,13 +169,23 @@ public class ParkingAnalyzer {
         return stops;
     }
 
-    private double average(Deque<Double> magnitudes) {
+    private double average(Collection<Double> magnitudes) {
         double sum = 0.0;
         for (Double x : magnitudes) {
             sum += x;
         }
         return sum / magnitudes.size();
     }
+
+    private double variance(Collection<Double> magnitudes) {
+        double avg = average(magnitudes);
+        double sum = 0.0;
+        for (Double x : magnitudes) {
+            sum += (x - avg) * (x - avg);
+        }
+        return sum / magnitudes.size();
+    }
+
 
     public double findMagnitude(float x, float y, float z) {
         return Math.sqrt(x*x + y*y + z*z);
@@ -321,6 +332,7 @@ public class ParkingAnalyzer {
                     far = true;
                 }
             }
+
             //Close again. Must have been a loop. Add one. Reset.
             if (distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value) < thresholdClose && far) {
                 if(key.before(findParkedTimestamp())) {
@@ -330,7 +342,6 @@ public class ParkingAnalyzer {
                 entered = false;
                 far = false;
             }
-            Log.i("DISTANCE FROM", Double.toString(distFromPOI(Constants.PARKING_LOTS_LOOPS.get(parkingLot),value)));
          }
         return loops;
     }
@@ -339,13 +350,12 @@ public class ParkingAnalyzer {
     /**
     Implements decision tree for determining parking availability.
      */
-    public int determineParkingAvailability() {
-
+    public void determineParkingAvailability() {
         double thresholdPOIClose = 50;
         double thresholdPOIFar = 50;
 
         if (!exitsOnFoot) {
-            return 0;
+            Constants.PARKING_LOTS_STATUS.put(parkingLot,"Empty");
         }
         else {
             //Walking and Number loops == 0
@@ -355,17 +365,17 @@ public class ParkingAnalyzer {
                 if (distanceFromPOI > thresholdPOIClose) {
                     if (numberOfStops == 0) {
                         //yellow
-                        return 30;
+                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                     }
 
                     else if (numberOfStops > 1) {
-                        return 70;
+                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Empty");
                     }
-
                 }
 
                 //Distance Far
                 else {
+
                 }
             }
             //# of Loops is equal to 1.
@@ -373,24 +383,20 @@ public class ParkingAnalyzer {
                 //Distance Close
                 if (distanceFromPOI > thresholdPOIClose) {
                     //yellow
-                    return 30;
+                    Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                 }
 
                 //Distance Far
                 else {
                     //yellow
-                    return 30;
+                    Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                 }
             }
             //# of Loops is greater than one.
             else if (numberOfLoops > 1) {
                 //red
-                return 0;
+                Constants.PARKING_LOTS_STATUS.put(parkingLot,"Full");
             }
-
         }
-
-        return 0;
-
     }
 }
