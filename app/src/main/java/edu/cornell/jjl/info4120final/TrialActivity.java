@@ -343,7 +343,7 @@ public class TrialActivity extends AppCompatActivity implements
 
     /**
      * Listens to determine whether or not to create a new csv file or continue writing
-     * to the current csv file. 
+     * to the current csv file.
      */
     public void startListening() {
         handler = new Handler();

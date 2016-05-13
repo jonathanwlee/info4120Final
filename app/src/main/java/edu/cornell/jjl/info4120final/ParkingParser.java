@@ -97,7 +97,7 @@ public class ParkingParser {
         }
     }
     /**
-     * Popu;ates the LinkedHashMap activityRecogData field with ActivityRecog objects corresponding to the provided csv file.
+     * Populates the LinkedHashMap activityRecogData field with ActivityRecog objects corresponding to the provided csv file.
      */
     public void populateActivityData() {
         BufferedReader fileReader = null;

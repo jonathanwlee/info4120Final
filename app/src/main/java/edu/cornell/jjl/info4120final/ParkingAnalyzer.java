@@ -47,6 +47,8 @@ public class ParkingAnalyzer {
         this.locationData = parser.locationData;
         this.accelerometerData = parser.accelerometerData;
         this.activityRecogData = parser.activityRecogData;
+        Log.i("VariablesLogFile",date);
+
         init();
         lastUpdateTime(date);
     }
@@ -71,6 +73,7 @@ public class ParkingAnalyzer {
             Log.i("VariablesLoops", Integer.toString(numberOfLoops));
             Log.i("VariablesDistancePOI", Double.toString(distanceFromPOI));
             Log.i("VariablesNumberOfStop", Integer.toString(numberOfStops));
+            Log.i("VariablesResult",Constants.PARKING_LOTS_STATUS.get(parkingLot));
         }
     }
 
@@ -243,7 +246,6 @@ public class ParkingAnalyzer {
         //Get last two activity recognition.
         int walkingThreshold = 50;
         List keyList = new ArrayList<Date>(activityRecogData.keySet());
-        Log.i("Length",Integer.toString(keyList.toArray().length));
         //If last two activity recognition don't have on foot > 50,
         for (int i=1; i < 3; i++) {
             if (activityRecogData.get(keyList.toArray()[keyList.size()-i]).walking > 50
@@ -391,17 +393,17 @@ public class ParkingAnalyzer {
     Implements decision tree for determining parking availability.
      */
     public void determineParkingAvailability() {
-        double thresholdPOIClose = 50;
-        double thresholdPOIFar = 50;
+        double thresholdPOIClose = 20;
+        double thresholdPOIFar = 20;
 
         if (!exitsOnFoot) {
-            Constants.PARKING_LOTS_STATUS.put(parkingLot,"Empty");
+            Constants.PARKING_LOTS_STATUS.put(parkingLot,"Full");
         }
         else {
             //Walking and Number loops == 0
             if (numberOfLoops == 0 ) {
 
-                //Distance Close
+                //Distance Far
                 if (distanceFromPOI > thresholdPOIClose) {
                     if (numberOfStops == 0) {
                         //yellow
@@ -409,32 +411,35 @@ public class ParkingAnalyzer {
                     }
 
                     else if (numberOfStops > 1) {
-                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Empty");
+                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                     }
                 }
 
-                //Distance Far
+                //Distance Close
                 else {
+                    if (numberOfStops == 0) {
+                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Empty");
+                    }
 
+                    else if (numberOfStops > 1) {
+                        Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Empty");
+                    }
                 }
             }
             //# of Loops is equal to 1.
             else if (numberOfLoops ==1 ) {
-                //Distance Close
+                //Distance Far
                 if (distanceFromPOI > thresholdPOIClose) {
-                    //yellow
                     Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                 }
 
-                //Distance Far
+                //Distance Close
                 else {
-                    //yellow
                     Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                 }
             }
             //# of Loops is greater than one.
             else if (numberOfLoops > 1) {
-                //red
                 Constants.PARKING_LOTS_STATUS.put(parkingLot,"Full");
             }
         }
