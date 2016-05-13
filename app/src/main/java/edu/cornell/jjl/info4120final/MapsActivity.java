@@ -23,6 +23,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * Android Activity to display parking lots and their availability.
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -53,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         populateMarkers();
 
+        //Centers camera view on Ithaca.
         LatLng center = new LatLng(42.447175, -76.483152);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(center,14));
 
@@ -74,7 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public View getInfoContents(Marker marker) {
 
-                Context context = getApplicationContext(); //or getActivity(), YourActivity.this, etc.
+                Context context = getApplicationContext();
 
                 LinearLayout info = new LinearLayout(context);
                 info.setOrientation(LinearLayout.VERTICAL);
@@ -96,7 +100,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
-
+    /**
+     * Creates a ParkingAnalyzer activity for each file in the phone's file path.
+     */
     public void createParkingParsers() {
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File yourDir = new File(sdCardRoot, "info4120data");
@@ -106,7 +112,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer(file_name);
         }
     }
-
+    /**
+     * Populates markers and colors corresponding to the parking lot status.
+     */
     public void populateMarkers() {
         for (Map.Entry<String, LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
             String title = "";

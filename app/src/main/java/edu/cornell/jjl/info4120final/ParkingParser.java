@@ -15,6 +15,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.LinkedHashMap;
 
+/**
+ * Class used to take accelerometer, location, and activity recog csv files and create a
+ * LinkedHashMap corresponding to each data set.
+ */
 public class ParkingParser {
 
     protected String fileName;
@@ -28,6 +32,10 @@ public class ParkingParser {
 
     protected SimpleDateFormat sdf;
 
+    /**
+     * Constructor to create parking parser for the corresponding date.
+     * @param date
+     */
     public ParkingParser(String date) {
         this.fileName = date;
 
@@ -41,12 +49,18 @@ public class ParkingParser {
         init();
     }
 
+    /**
+     * Populates locationData, accelerometerData, and activityRecogData.
+     */
     public void init() {
         populateLocationData();
         populateAccelerometerData();
         populateActivityData();
     }
 
+    /**
+     * Populates the LinkedHashMap accelerometerData field with Accel objects corresponding to the provided csv file.
+     */
     public void populateAccelerometerData() {
         BufferedReader fileReader = null;
         //Delimiter used in CSV file
@@ -82,7 +96,9 @@ public class ParkingParser {
             }
         }
     }
-
+    /**
+     * Popu;ates the LinkedHashMap activityRecogData field with ActivityRecog objects corresponding to the provided csv file.
+     */
     public void populateActivityData() {
         BufferedReader fileReader = null;
         //Delimiter used in CSV file
@@ -120,7 +136,9 @@ public class ParkingParser {
                 }
             }
         }
-
+    /**
+     * Populates the LinkedHashMap locationData field with Location objects corresponding to the provided csv file.
+     */
     public void populateLocationData() {
         BufferedReader fileReader = null;
         //Delimiter used in CSV file

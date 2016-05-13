@@ -44,8 +44,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
-
-public class MainActivity extends AppCompatActivity implements
+/**
+ * This class provides a means of saving and storing data within a parking lot. Used to collect
+ * trials for our INFO4120 paper.
+ */
+public class TrialActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, LocationListener, SensorEventListener, ResultCallback<Status> {
 
     /**Geofences added
@@ -252,15 +255,18 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * On click of start button. Starts saving of sensor data.
+     */
     public void startClick(View view) {
-        //mRequestingUpdates = true;
         mSharedPreferences.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,true).commit();
         startButton.setEnabled(false);
         stopButton.setEnabled(true);
     }
-
+    /**
+     * On click of stop button. Stops saving of sensor data.
+     */
     public void stopClick(View view) {
-       // mRequestingUpdates = false;
         mSharedPreferences.edit().putBoolean(REQUESTING_LOCATION_UPDATES_KEY,false).commit();
         startButton.setEnabled(true);
         stopButton.setEnabled(false);
@@ -335,6 +341,10 @@ public class MainActivity extends AppCompatActivity implements
                 mGoogleApiClient, mLocationRequest, this);
     }
 
+    /**
+     * Listens to determine whether or not to create a new csv file or continue writing
+     * to the current csv file. 
+     */
     public void startListening() {
         handler = new Handler();
 
@@ -345,11 +355,8 @@ public class MainActivity extends AppCompatActivity implements
                     if (mRequestingUpdates == mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)) {
                     } else {
                         mRequestingUpdates = mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false);
-                        Log.i("mRequestingUpdates",Boolean.toString(mRequestingUpdates));
-                        Log.i("mRequestingeShared",Boolean.toString(mSharedPreferences.getBoolean(REQUESTING_LOCATION_UPDATES_KEY, false)));
 
                         if (mRequestingUpdates) {
-                            Log.i("Requesting","Entered");
                             startLocationUpdates();
                             mAccelLogger = new DataLogger("accel");
                             mLocationLogger = new DataLogger("location");
@@ -695,11 +702,11 @@ public class MainActivity extends AppCompatActivity implements
      */
     public class GeofenceReceiver extends BroadcastReceiver {
 
-        MainActivity mActivity;
+        TrialActivity mActivity;
         SharedPreferences mSharedPreferences;
 
         public GeofenceReceiver(Activity activity){
-                    mActivity = (MainActivity) activity;
+                    mActivity = (TrialActivity) activity;
         }
 
         @Override

@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
+/**
+ * Class used for feature identification and classification of parking lot availability.
+ */
 public class ParkingAnalyzer {
     String parkingLot = "";
     ParkingParser parser;
@@ -34,6 +38,10 @@ public class ParkingAnalyzer {
     protected LinkedHashMap<Date, Accel> accelerometerData = new LinkedHashMap<Date, Accel>();
     protected LinkedHashMap<Date, ActivityRecog> activityRecogData = new LinkedHashMap<Date, ActivityRecog>();
 
+    /**
+     * Constructor to populate LinkedHashMaps corresponding to sensor data for analysis.
+     * @param date
+     */
     public ParkingAnalyzer(String date) {
         parser = new ParkingParser(date);
         this.locationData = parser.locationData;
@@ -41,10 +49,14 @@ public class ParkingAnalyzer {
         this.activityRecogData = parser.activityRecogData;
         init();
         lastUpdateTime(date);
-
     }
 
+
+    /**
+     * Runs all feature identification and classification procedures.
+     */
     public void init() {
+        //Only runs if the file is the most recent file corresponding to that parking lot.
         if (most_recent) {
             this.parkingLot = findParkingLot();
             this.exitsOnFoot = exitsOnFoot();
@@ -62,6 +74,11 @@ public class ParkingAnalyzer {
         }
     }
 
+    /**
+     * Determines whether the current file is the most recent data log of the given parking lot.
+     * Converts date to String format that can be displayed in the MapsActivity.
+     * @param date
+     */
     public void lastUpdateTime(String date) {
         Date updatedDate;
         Date currentDate;
@@ -106,11 +123,14 @@ public class ParkingAnalyzer {
             }
         }
 
+        //Default. Sage Hall Parking Lot.
         return "Sage";
     }
 
 
-
+    /**
+     * Returns the number of stops from the given accelerometer data.
+     */
     public int numberOfStops() {
         int stops = 0;
         boolean wasMoving = false;
@@ -186,11 +206,16 @@ public class ParkingAnalyzer {
         return sum / magnitudes.size();
     }
 
-
+    /**
+     * Returns the magnitude of a given x,y,z value.
+     */
     public double findMagnitude(float x, float y, float z) {
         return Math.sqrt(x*x + y*y + z*z);
     }
 
+    /**
+     * @return LatLng corresponding to the parking location.
+     */
     public LatLng findParkingLocation() {
         //If never parked, return Preset 0,0 LatLng
         if (findParkedTimestamp().equals(new Date(Long.MIN_VALUE))) {
@@ -210,6 +235,10 @@ public class ParkingAnalyzer {
         return locationData.get(nearestDate);
     }
 
+    /**
+     * Determines whether user exited the parking lot on foot or vehicle.
+     * @return boolean corresponding to if the user exited on foot.
+     */
     public boolean exitsOnFoot() {
         //Get last two activity recognition.
         int walkingThreshold = 50;
@@ -225,6 +254,10 @@ public class ParkingAnalyzer {
         return false;
     }
 
+    /**
+     * Determines the timestamp most closely corresponding to the time that the user has parked.
+     * @return Date corresponding to timestamp at which parked.
+     */
     public Date findParkedTimestamp() {
         Date parkingTimestamp = new Date(Long.MIN_VALUE);
         boolean foundIndex = false;
@@ -294,6 +327,9 @@ public class ParkingAnalyzer {
         return (end.getTime() - start.getTime()) / DateUtils.SECOND_IN_MILLIS;
     }
 
+    /**
+     * Determines the distance between two LatLng objects.
+     */
     public double distFromPOI(LatLng latlng1, LatLng latlng2) {
         Location locPOI = new Location("POI");
         locPOI.setLatitude(latlng1.latitude);
@@ -311,6 +347,10 @@ public class ParkingAnalyzer {
         return locPOI.distanceTo(locParking);
     }
 
+    /**
+     * Determines the number of loops that the user has made witin a parking lot.
+     * @return integer corresponding to the numer of loops that a user conducted.
+     */
     public int numberOfLoops() {
         int loops = 0;
         double thresholdClose = 10;

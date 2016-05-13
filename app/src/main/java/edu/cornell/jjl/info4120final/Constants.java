@@ -1,22 +1,5 @@
 package edu.cornell.jjl.info4120final;
 
-/**
- * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
 import android.content.Context;
 import android.content.res.Resources;
 
@@ -25,7 +8,8 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.LinkedHashMap;
 
 /**
- * Constants used in this sample.
+ * Constants used in this demo. Also includes Parking Lot information concerning LatLng
+ * of relevant locations as well as status and last updated date.
  */
 public final class Constants {
 
@@ -33,11 +17,8 @@ public final class Constants {
     }
 
     public static final String PACKAGE_NAME = "com.google.android.gms.location.Geofence";
-
     public static final String BROADCAST_ACTION = PACKAGE_NAME + ".BROADCAST_ACTION";
-
     public static final String ACTIVITY_EXTRA    = PACKAGE_NAME + ".ACTIVITY_EXTRA";
-
     public static final String SHARED_PREFERENCES_NAME = PACKAGE_NAME + ".SHARED_PREFERENCES_NAME";
 
     public static final String GEOFENCES_ADDED_KEY = PACKAGE_NAME + ".GEOFENCES_ADDED_KEY";
@@ -60,7 +41,7 @@ public final class Constants {
     public static final float GEOFENCE_RADIUS_IN_METERS = 150; // 1 mile, 1.6 km
 
     /**
-     * Map for storing information about parking lots.
+     * LinkedHashMap for storing information about parking lots.
      */
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS = new LinkedHashMap<String, LatLng>();
     public static final LinkedHashMap<String, LatLng> PARKING_LOTS_ENTRANCE = new LinkedHashMap<String,LatLng>();

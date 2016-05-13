@@ -1,7 +1,7 @@
 package edu.cornell.jjl.info4120final;
 
 /**
- * Created by jjl on 4/25/2016.
+ * Activity Recognition Object to hold Google Activity Recognition detected activities output.
  */
 public class ActivityRecog {
     protected int still;
@@ -11,9 +11,19 @@ public class ActivityRecog {
     protected int bicycle;
     protected int vehicle;
     protected int tilting;
-
     protected int unknown;
 
+    /**
+     * Constuctor to create an ActivityRecog object from detected activities output.
+     * @param still
+     * @param foot
+     * @param walking
+     * @param running
+     * @param bicycle
+     * @param vehicle
+     * @param tilting
+     * @param unknown
+     */
     public ActivityRecog(int still, int foot, int walking, int running, int bicycle, int vehicle, int tilting, int unknown) {
         this.still = still;
         this.foot = foot;

@@ -17,11 +17,19 @@ import android.util.Log;
 
 import com.google.android.gms.location.DetectedActivity;
 
+/**
+ * Saves and stores sensor data from a parking instance into a csv file for
+ * future analysis.
+ */
 public class DataLogger {
     private String logFileName;
     private String logFilePath;
     private SimpleDateFormat logSDF;
 
+    /**
+     * Constructor to create a data logger for a given mode.
+     * @param mode specifies file name. Either accelerometer, activity recognition, or location.
+     */
     public DataLogger(String mode) {
         logFileName = genFileName(mode);
         logFilePath = genFilePath();
@@ -29,10 +37,17 @@ public class DataLogger {
         logSDF.setTimeZone(TimeZone.getTimeZone("UTC-5"));
     }
 
+    /**
+     * Returns Log File Path
+     */
     public String getLogFilePath() {
         return logFilePath + logFileName;
     }
 
+    /**
+     * Creates a csv file for location data. Writes new latitude and longitude values into a
+     * new line along with a timestamp of the current time.
+     */
     public void logLocation(String latitude, String longitude) {
         File file = new File(logFilePath, logFileName);
         Boolean fileExists = file.exists();
@@ -56,7 +71,10 @@ public class DataLogger {
             // Testing: was written file successful?
             //readAndPrintFile(file);
         }
-
+    /**
+     * Creates a csv file for accelerometer data. Writes new x, y, and z values into a
+     * new line along with a timestamp of the current time.
+     */
     public void logAccel(String x, String y, String z) {
         File file = new File(logFilePath, logFileName);
         Boolean fileExists = file.exists();
@@ -80,7 +98,10 @@ public class DataLogger {
         // Testing: was written file successful?
         //readAndPrintFile(file);
     }
-
+    /**
+     * Creates a csv file for activity recognition data. Writes new detected activities data
+     * into a new line along with the timestamp of the current time.
+     */
     public void logActivity(ArrayList<DetectedActivity> detectedActivities) {
         int still=0;
         int foot=0;
@@ -94,35 +115,27 @@ public class DataLogger {
         for (DetectedActivity da: detectedActivities) {
             switch(da.getType()) {
                 case DetectedActivity.IN_VEHICLE:
-                    Log.i("RECOG","Vehicle: " + da.getConfidence());
                     vehicle = da.getConfidence();
                     break;
                 case DetectedActivity.ON_BICYCLE:
-                    Log.i("RECOG","Bicycle: " + da.getConfidence());
                     bicycle = da.getConfidence();
                     break;
                 case DetectedActivity.ON_FOOT:
-                    Log.i("RECOG","Foot: " + da.getConfidence());
                     foot = da.getConfidence();
                     break;
                 case DetectedActivity.RUNNING:
-                    Log.i("RECOG","Running: " + da.getConfidence());
                     running = da.getConfidence();
                     break;
                 case DetectedActivity.STILL:
-                    Log.i("RECOG","Still: " + da.getConfidence());
                     still = da.getConfidence();
                     break;
                 case DetectedActivity.TILTING:
-                    Log.i("RECOG","Tilting: " + da.getConfidence());
                     tilting = da.getConfidence();
                     break;
                 case DetectedActivity.UNKNOWN:
-                    Log.i("RECOG","Unknown: " + da.getConfidence());
                     unknown = da.getConfidence();
                     break;
                 case DetectedActivity.WALKING:
-                    Log.i("RECOG","Walking: " + da.getConfidence());
                     walking = da.getConfidence();
                     break;
                 default:
@@ -154,7 +167,9 @@ public class DataLogger {
         // Testing: was written file successful?
         //readAndPrintFile(file);
     }
-
+    /**
+     * Used for debugging purposes to read the CSV file.
+     */
     private void readAndPrintFile(File file) {
         if (file.exists()) {
             StringBuilder text = new StringBuilder();
@@ -172,6 +187,9 @@ public class DataLogger {
             }
         }
     }
+    /**
+     * Returns a string name which corresponds to the file name for the csv file.
+     */
 
     private String genFileName(String mode) {
         long time = System.currentTimeMillis();
@@ -179,7 +197,9 @@ public class DataLogger {
         sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         return "log_" + sdf.format(new Date(time)) + "_" + mode + ".csv";
     }
-
+    /**
+     * Returns a string name corresponding to the file path of the csv file.
+     */
     private String genFilePath() {
         File storage = Environment.getExternalStorageDirectory();
         String path = storage.getAbsolutePath() + "/info4120data/";
