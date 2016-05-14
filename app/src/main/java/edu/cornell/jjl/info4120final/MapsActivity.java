@@ -110,15 +110,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Creates a ParkingAnalyzer activity for each file in the phone's file path.
      */
     public void createParkingParsers() {
+        //Gets directory.
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File yourDir = new File(sdCardRoot, "info4120data");
         List<String> file_names = new ArrayList<String>();
 
+        //Splits up file names to include just what is needed for a new parking analyzer.
         for (File f : yourDir.listFiles()) {
             String[] file_name_split = f.getName().split("_");
             String file_name = file_name_split[0] + "_" + file_name_split[1] + "_" + file_name_split[2];
             file_names.add(file_name);
         }
+
+        //Get rid of duplicates
         HashSet hs = new HashSet();
         hs.addAll(file_names);
         file_names.clear();
@@ -135,6 +139,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for (Map.Entry<String, LatLng> entry : Constants.PARKING_LOTS.entrySet()) {
             String title = "";
             float marker_color = BitmapDescriptorFactory.HUE_RED;
+
+            //Sets actual titles of parking lots.
             if (entry.getKey() == "Sage") { title = "Sage Hall Parking Lot";}
             else if (entry.getKey() == "WSH") {title = "Willard Straight Hall Parking Lot";}
             else if (entry.getKey() == "Upson") { title = "Upson Hall Parking Lot"; }
@@ -145,11 +151,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             String status = Constants.PARKING_LOTS_STATUS.get(entry.getKey());
 
+            //Set colors based off status.
             if (status =="Empty") { marker_color = BitmapDescriptorFactory.HUE_GREEN;}
             else if (status =="Semi-Empty") {marker_color = BitmapDescriptorFactory.HUE_YELLOW; }
             else if (status =="Semi-Full") {marker_color = BitmapDescriptorFactory.HUE_ORANGE; }
             else if (status == "Full") {marker_color = BitmapDescriptorFactory.HUE_RED;}
 
+            //Information Label.
             String content = "Total Number of Spaces: " + Constants.PARKING_LOTS_SPACES.get(entry.getKey()) + "\n" +
                     "Status: " + Constants.PARKING_LOTS_STATUS.get(entry.getKey()) + "\n" + "Last Updated: " +
                     Constants.PARKING_LOTS_LAST_UPDATE.get(entry.getKey());

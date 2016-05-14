@@ -19,5 +19,4 @@ public class Accel {
         this.y = y;
         this.z = z;
     }
-
 }

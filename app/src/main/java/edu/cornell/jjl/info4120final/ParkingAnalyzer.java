@@ -5,7 +5,6 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,7 +48,7 @@ public class ParkingAnalyzer {
         this.activityRecogData = parser.activityRecogData;
         Log.i("VariablesLogFile",date);
 
-        //Put lastUpdateTime() behind init() if want to run all files. 
+        //Put lastUpdateTime() behind init() if want to run all files.
         lastUpdateTime(date);
         init();
     }
@@ -193,6 +192,9 @@ public class ParkingAnalyzer {
         return stops;
     }
 
+    /**
+     * Function to calculate the average. Used for determining number of stops.
+     */
     private double average(Collection<Double> magnitudes) {
         double sum = 0.0;
         for (Double x : magnitudes) {
@@ -201,6 +203,10 @@ public class ParkingAnalyzer {
         return sum / magnitudes.size();
     }
 
+    /**
+     * Function to calculate variance of a given number of magnitudes. Used for determining
+     * number of stops.
+     */
     private double variance(Collection<Double> magnitudes) {
         double avg = average(magnitudes);
         double sum = 0.0;
