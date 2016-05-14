@@ -49,8 +49,9 @@ public class ParkingAnalyzer {
         this.activityRecogData = parser.activityRecogData;
         Log.i("VariablesLogFile",date);
 
-        init();
+        //Put lastUpdateTime() behind init() if want to run all files. 
         lastUpdateTime(date);
+        init();
     }
 
 
@@ -304,7 +305,6 @@ public class ParkingAnalyzer {
                 }
             }
         }
-        Log.i("ParkingTimestamp",parkingTimestamp.toString());
         return parkingTimestamp;
     }
 
@@ -393,8 +393,8 @@ public class ParkingAnalyzer {
     Implements decision tree for determining parking availability.
      */
     public void determineParkingAvailability() {
-        double thresholdPOIClose = 20;
-        double thresholdPOIFar = 20;
+        double thresholdPOIClose = 4;
+        double thresholdPOIFar = 4;
 
         if (!exitsOnFoot) {
             Constants.PARKING_LOTS_STATUS.put(parkingLot,"Full");

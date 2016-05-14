@@ -21,7 +21,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Android Activity to display parking lots and their availability.
@@ -106,10 +112,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void createParkingParsers() {
         File sdCardRoot = Environment.getExternalStorageDirectory();
         File yourDir = new File(sdCardRoot, "info4120data");
+        List<String> file_names = new ArrayList<String>();
+
         for (File f : yourDir.listFiles()) {
             String[] file_name_split = f.getName().split("_");
             String file_name = file_name_split[0] + "_" + file_name_split[1] + "_" + file_name_split[2];
-            ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer(file_name);
+            file_names.add(file_name);
+        }
+        HashSet hs = new HashSet();
+        hs.addAll(file_names);
+        file_names.clear();
+        file_names.addAll(hs);
+
+        for (int i =0; i < file_names.size(); i++) {
+            ParkingAnalyzer parkingAnalyzer = new ParkingAnalyzer(file_names.get(i));
         }
     }
     /**
