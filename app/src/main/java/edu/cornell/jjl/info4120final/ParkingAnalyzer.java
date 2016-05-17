@@ -412,7 +412,6 @@ public class ParkingAnalyzer {
                 //Distance Far
                 if (distanceFromPOI > thresholdPOIClose) {
                     if (numberOfStops == 0) {
-                        //yellow
                         Constants.PARKING_LOTS_STATUS.put(parkingLot,"Semi-Full");
                     }
 
